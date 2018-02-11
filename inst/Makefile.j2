@@ -1,0 +1,16 @@
+self:
+	@echo "$$( tput bold )$$( tput setaf 6 )Scanning dependencies ...$$( tput sgr0 )"
+	python3 scan_dependencies.py
+	$(MAKE) all
+
+all: {{ all|join(' ') }}
+
+{% for elem in make -%}
+{% if elem.dest|length > 0 -%}
+{{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }}
+	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
+	time {{ elem.task }}
+{% endif %}
+{% endfor -%}
+
+# vim: ft=make

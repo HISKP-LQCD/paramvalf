@@ -56,7 +56,7 @@ make_summary <- function(pv) {
     res <- list()
 
     for (i in 1:nrow(pv$param)) {
-        res[[i]] <- cbind(pv$param[i, ], pv$value[i, ][[1]])
+        res[[i]] <- cbind(pv$param[i, , drop = FALSE], pv$value[i, , drop = FALSE][[1]])
         rownames(res[[i]]) <- NULL
     }
 

@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
+library(ggplot2)
 ```
 
 # Motivation
@@ -44,16 +45,13 @@ Now we can do a correlation. In order to work with the container, we need to wri
 
 ```{r}
 do_correlation <- function(param, value) {
-    debug_print(param)
-    
     # We only want to take the rows from the `mtcars` data set which correspond
     # to a specific number of cylinders as specified in the parameters.
     data <- mtcars %>%
         filter(cyl == param$cyl)
     
-    correlation <- cor(data$disp, data$hp)
-    
-    list(corr_disp_hp = correlation)
+    list(corr_disp_hp = cor(data$disp, data$hp),
+         corr_disp_wt = cor(data$disp, data$wt))
 }
 ```
 
@@ -85,38 +83,79 @@ correlation_method <- list(param = data.frame(correlation_method = c('pearson', 
 
 
 ```{r}
-do_correlation2 <- function(param, value) {
+do_correlation <- function(param, value) {
     # We only want to take the rows from the `mtcars` data set which correspond
     # to a specific number of cylinders as specified in the parameters.
     data <- mtcars %>%
         filter(cyl == param$cyl)
     
-    correlation <- cor(data$disp, data$hp, method = param$correlation_method)
-    
-    list(corr_disp_hp = correlation)
+    list(corr_disp_hp = cor(data$disp, data$hp, method = param$correlation_method),
+         corr_disp_wt = cor(data$disp, data$wt, method = param$correlation_method))
 }
 
-correlation2 <- call.pvcontainer(do_correlation2, cylinders, correlation_method)
+correlation <- call.pvcontainer(do_correlation, cylinders, correlation_method)
 ```
 
 Now we have a more interesting result.
 
 ```{r}
-print(correlation2)
+print(correlation)
 ```
 
-Since there is some correlation, we want to try a linear fit to the data. This depends on the number of cylinders, but not on the correlation method chosen.
+This might be the point where one becomes interested in the other cylinder counts. So we redefine the `cylinders` container such that it contains them.
 
 ```{r}
-do_fit <- function(param, value) {
-    data <- mtcars %>%
-        filter(cyl == param$cyl)
-    
-    model <- lm(hp ~ cyl, data)
-    
-    list(fit_model = model)
-}
-
-fit <- call.pvcontainer(do_fit, cylinders)
+cylinders <- list(param = data.frame(cyl = c(4, 6, 8)))
 ```
 
+We can just re-run the functions because they were built with this extension in mind already.
+
+```{r}
+correlation <- call.pvcontainer(do_correlation, cylinders, correlation_method)
+print(correlation)
+```
+
+The result has 6 rows already because we have the outer product of the number of cylinders and the correlation method. This is the *long data format* and it makes adding more parameters straightforward.
+
+Our values so far are just atomics, but `correlation$value` is not a simple data frame any more. This is the problem of this approach, because it is rather a list of lists which happen to have the same names. Therefore one needs to be a but more careful. In order to access the elements, it might be needed to use `value[, 'COL']` instead of just `value$COL`. This is unfortunate, but so far I have not learned a better way.
+
+We want to build a *summary* now. This is a single large data frame which contains all the parameters and new summarizing columns. The number of rows can be arbitrary for each parameter set. Basically it will take the summary data frame for each parameter set, bind the parameters to *each row* and then bind all the resulting data frames to one long one.
+
+Here we extract the two correlations that we have computed and put them into one column `corr`. A second column `type` keeps track of the variable that we the correlation is formed with. For each parameter set we will have a data frame with two rows.
+
+```{r}
+do_corr_summary <- function(param, value) {
+    summary <- data.frame(corr = c(unlist(value[, 'corr_disp_hp']),
+                                   unlist(value[, 'corr_disp_wt'])),
+                          variable = c('HP', 'Weight'))
+                          
+    list(summary = summary)
+}
+
+corr_summary <- make_summary(call.pvcontainer(do_corr_summary, correlation))
+```
+
+The resulting data frame has two rows per parameter set. This is flexible, so you can have arbitrary many rows for each parameter set.
+
+```{r}
+print(corr_summary)
+```
+
+This format lends itself for plotting with `ggplot2`. We can place parameters and variables on various axes.
+
+```{r}
+ggplot(corr_summary,
+       aes(x = cyl,
+           y = corr,
+           color = correlation_method,
+           shape = variable)) +
+    geom_point(position = position_dodge(width = 0.4))
+```
+
+# Summary
+
+We have covered the `call.pvcontainer` function which takes a function and one or more “parameter value container” objects and calls the function on each combination of the parameters.
+
+# Outlook
+
+At some point it might be needed to convert a former parameter to a value column. This will reduce the number of rows but makes each more complex. For this the `pvcall_group` function takes a character vector with the parameter names and does exactly this.

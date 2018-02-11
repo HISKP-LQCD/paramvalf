@@ -1,0 +1,122 @@
+---
+title: "Parameter Value Analysis Framework"
+author: "Martin Ueding"
+date: "11 Februar 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+```
+
+# Motivation
+
+During my course of studies I have often faced the following situation: I would analyse a data set and make some choices about the methedology along the way. My advisor would then ask me to chance some facet within the analysis code. The chance usually was easy to do, I re-run the whole analysis again and showed the data. Then I was asked to compare both variants, for instance in a combined plot.
+
+The trouble is that I can do both variants individually, but not both at the same time. There are options which make this possible, but do not scale:
+
+- One could duplicate the whole analysis and just change the facet. One would have to rename all the variables but then one has all the data in one R sessions.
+- Alternatively one could run the analysis once, store everything to an `analysis-1.Rdata` file, change the facet, re-run and store everything to `analysis-2.Rdata`. Then load those files and perform the comparison.
+
+These ways turn bad rather quickly as each bifurcation introduced increases the number of combinatoric combinations possible.
+
+This analysis framework is an answer to this problem. Every step of the analysis is performed with the possibility of adding more parameters in mind.
+
+# Data structure
+
+The data structure of the framework are “parameter value containers” which are a simple `list` with the fields `param` and `value`. Both are a `data.frame` and the number of rows must match. The `value` may be omitted if there are only parameters. The names of the colums should be unique throughout the whole analysis.
+
+# Example
+
+The following will be a contrieved example to show how the framework works. The statistical content of this example should not be taken seriously.
+
+Let's use the `mtcars` data set that is shipped with R. It contains the “Motor Trend Car Road Tests” and is a data frame with various data points of 32 cars. First we want to see whether there is a correlation between displacement (engine volume) and power in four cylinder cars. The number `4` is our first parameter.
+
+To inject these parameters, we need to create a “parameter value container” which only contains parameters.
+
+```{r}
+cylinders <- list(param = data.frame(cyl = c(4)))
+```
+
+Now we can do a correlation. In order to work with the container, we need to write a special function and then use the function `call.pvcontainer`.
+
+```{r}
+do_correlation <- function(param, value) {
+    debug_print(param)
+    
+    # We only want to take the rows from the `mtcars` data set which correspond
+    # to a specific number of cylinders as specified in the parameters.
+    data <- mtcars %>%
+        filter(cyl == param$cyl)
+    
+    correlation <- cor(data$disp, data$hp)
+    
+    list(corr_disp_hp = correlation)
+}
+```
+
+The functions in this framework always have the same structure:
+
+- Their parameters are always `param` and `value`, no matter how many variables go into this computation. This means that dependencies are not explicit here.
+- The return value is always a `list`. The names of the variables are those which will be available in `value` in later parts of the analysis. These need to be unique in the whole analysis.
+
+In order to call this functions, we use the framework function.
+
+```{r}
+correlation <- call.pvcontainer(do_correlation, cylinders)
+```
+
+This object now contains the correlation for each set of the parameters.
+
+```{r}
+print(correlation)
+```
+
+Since we only have one parameter so far, there is only one row in it.
+
+Now we perhaps wonder what the correlation is if we used the Spearman and not the Person (default) correlation definition. We can easily create another parameter for this.
+
+```{r}
+correlation_method <- list(param = data.frame(correlation_method = c('pearson', 'spearman'),
+                                              stringsAsFactors = FALSE))
+```
+
+
+```{r}
+do_correlation2 <- function(param, value) {
+    # We only want to take the rows from the `mtcars` data set which correspond
+    # to a specific number of cylinders as specified in the parameters.
+    data <- mtcars %>%
+        filter(cyl == param$cyl)
+    
+    correlation <- cor(data$disp, data$hp, method = param$correlation_method)
+    
+    list(corr_disp_hp = correlation)
+}
+
+correlation2 <- call.pvcontainer(do_correlation2, cylinders, correlation_method)
+```
+
+Now we have a more interesting result.
+
+```{r}
+print(correlation2)
+```
+
+Since there is some correlation, we want to try a linear fit to the data. This depends on the number of cylinders, but not on the correlation method chosen.
+
+```{r}
+do_fit <- function(param, value) {
+    data <- mtcars %>%
+        filter(cyl == param$cyl)
+    
+    model <- lm(hp ~ cyl, data)
+    
+    list(fit_model = model)
+}
+
+fit <- call.pvcontainer(do_fit, cylinders)
+```
+

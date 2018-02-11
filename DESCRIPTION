@@ -10,3 +10,6 @@ Description: A framework for running analysis steps with different options.
 License: MIT/Expat
 Encoding: UTF-8
 LazyData: true
+Imports:
+    dplyr
+RoxygenNote: 6.0.1

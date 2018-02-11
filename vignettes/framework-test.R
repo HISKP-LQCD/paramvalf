@@ -1,5 +1,3 @@
-source('framework.R')
-
 # Some sample data in the format that we need.
 two <- list(param = data.frame(L = c(24),
                                shift = c(TRUE, FALSE)),

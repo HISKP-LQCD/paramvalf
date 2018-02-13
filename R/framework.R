@@ -81,3 +81,23 @@ make_summary <- function(pv) {
 
     return (bound)
 }
+
+#' Transposes a list of lists.
+#'
+#' @param ll A numbered list of named lists. It is expected that all the inner
+#'   lists have the same names. The outer list is expected to be just numbered,
+#'   no names.
+#'
+#' @return A named list of numbered lists. The names of the outer list are
+#'   copied from the first inner list.
+#'
+#' Heavily inspired by a
+#' [Stack Overflow post of Victor K.](https://stackoverflow.com/a/16179574/653152).
+#' The snippet is implictly licensed under the MIT/Expat license.
+list_transpose <- function(ll) {
+    stopifnot(all_names_equal(ll))
+    n <- length(ll[[1]])
+    ll2 <- lapply(1:n, function(i) lapply(ll, '[[', i))
+    names(ll2) <- names(ll[[1]])
+    return (ll2)
+}

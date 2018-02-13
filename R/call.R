@@ -70,8 +70,8 @@ parameter_to_data <- function(pv, func, param_cols_del) {
     param_cols_all <- colnames(pv$param)
     param_cols_keep <- setdiff(param_cols_all, param_cols_del)
 
-    # Label the parameter rows such that we can select the needed rows from the
-    # `value` later on.
+    # Label the parameter rows such that we can select the needed elements from
+    # the `value` later on.
     pv$param$.idx <- 1:nrow(pv$param)
 
     grouped <- pv$param %>%
@@ -83,7 +83,7 @@ parameter_to_data <- function(pv, func, param_cols_del) {
 
     applied <- parallel::mclapply(indices, function (is) {
         is <- unlist(is)
-        func(pv$param[is, ], pv$value[is, ])
+        func(pv$param[is, ], list_transpose(pv$value[is]))
     })
 
     list(param = grouped,

@@ -68,7 +68,9 @@ def main():
     files = [process_file(filename) for filename in glob.glob('R/*.R')]
     files_rmd = [process_file(filename) for filename in glob.glob('*.Rmd')]
 
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
+    source_dir = os.path.dirname(__file__)
+
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(source_dir))
     dot_template = env.get_template('autoflow.dot.j2')
     make_template = env.get_template('Makefile.j2')
 
@@ -95,7 +97,7 @@ def main():
                 for dest in item['dest']]
 
 
-    make_rendered = make_template.render(make=make, all=make_all)
+    make_rendered = make_template.render(make=make, all=make_all, source_dir=source_dir)
     with open('Makefile', 'w') as f:
         f.write(make_rendered)
 

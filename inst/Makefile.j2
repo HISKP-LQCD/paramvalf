@@ -1,6 +1,6 @@
 self:
 	@echo "$$( tput bold )$$( tput setaf 6 )Scanning dependencies ...$$( tput sgr0 )"
-	python3 scan_dependencies.py
+	python3 {{ source_dir }}/scan_dependencies.py
 	$(MAKE) all
 
 all: {{ all|join(' ') }}

@@ -1,8 +1,12 @@
 ---
 title: "Parameter Value Analysis Framework"
 author: "Martin Ueding"
-date: "11 Februar 2018"
-output: html_document
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

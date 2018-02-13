@@ -18,7 +18,7 @@ pattern_save = re.compile(r'^save\([^,]+, file = \'output/([^.]+).Rdata\'\)', re
 #pattern_call = re.compile(r'(\S+) <- call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
 pattern_call = re.compile(r'^([^#\s]+) <- call\.pvcontainer\(([^)]+)\)', re.M)
 #pattern_sink = re.compile(r'^call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
-pattern_sink = re.compile(r'^call\.pvcontainer\(([^)]+)\)', re.M)
+pattern_sink = re.compile(r'^pvcall\(([^)]+)\)', re.M)
 
 def process_file(filename):
     with open(filename) as f:

@@ -21,5 +21,5 @@ delta_E <- function(param, value) {
 }
 
 
-res <- call.pvcontainer(delta_E, two, four)
+res <- pvcall(delta_E, two, four)
 print(res)

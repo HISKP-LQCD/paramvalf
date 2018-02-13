@@ -45,7 +45,7 @@ To inject these parameters, we need to create a “parameter value container” 
 cylinders <- list(param = data.frame(cyl = c(4)))
 ```
 
-Now we can do a correlation. In order to work with the container, we need to write a special function and then use the function `call.pvcontainer`.
+Now we can do a correlation. In order to work with the container, we need to write a special function and then use the function `pvcall`.
 
 ```{r}
 do_correlation <- function(param, value) {
@@ -67,7 +67,7 @@ The functions in this framework always have the same structure:
 In order to call this functions, we use the framework function.
 
 ```{r}
-correlation <- call.pvcontainer(do_correlation, cylinders)
+correlation <- pvcall(do_correlation, cylinders)
 ```
 
 This object now contains the correlation for each set of the parameters.
@@ -97,7 +97,7 @@ do_correlation <- function(param, value) {
          corr_disp_wt = cor(data$disp, data$wt, method = param$correlation_method))
 }
 
-correlation <- call.pvcontainer(do_correlation, cylinders, correlation_method)
+correlation <- pvcall(do_correlation, cylinders, correlation_method)
 ```
 
 Now we have a more interesting result.
@@ -115,7 +115,7 @@ cylinders <- list(param = data.frame(cyl = c(4, 6, 8)))
 We can just re-run the functions because they were built with this extension in mind already.
 
 ```{r}
-correlation <- call.pvcontainer(do_correlation, cylinders, correlation_method)
+correlation <- pvcall(do_correlation, cylinders, correlation_method)
 print(correlation)
 ```
 
@@ -136,7 +136,7 @@ do_corr_summary <- function(param, value) {
     list(summary = summary)
 }
 
-corr_summary <- make_summary(call.pvcontainer(do_corr_summary, correlation))
+corr_summary <- make_summary(pvcall(do_corr_summary, correlation))
 ```
 
 The resulting data frame has two rows per parameter set. This is flexible, so you can have arbitrary many rows for each parameter set.
@@ -158,7 +158,7 @@ ggplot(corr_summary,
 
 # Summary
 
-We have covered the `call.pvcontainer` function which takes a function and one or more “parameter value container” objects and calls the function on each combination of the parameters.
+We have covered the `pvcall` function which takes a function and one or more “parameter value container” objects and calls the function on each combination of the parameters.
 
 # Outlook
 

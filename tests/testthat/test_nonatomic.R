@@ -12,7 +12,7 @@ test_that('list', {
              v2 = p0)
     }
 
-    v <- call.pvcontainer(f, p0)
+    v <- pvcall(f, p0)
 
     # Now we need to make sure that we can easily access the variables within
     # another function, i.e. the expression `value$v1` must work, we do not want
@@ -22,5 +22,5 @@ test_that('list', {
         expect_equal(value$v1, list(3, 'X'))
     }
 
-    v2 <- call.pvcontainer(f2, v)
+    v2 <- pvcall(f2, v)
 })

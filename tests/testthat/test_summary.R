@@ -13,7 +13,7 @@ test_that('summary', {
                                   z = value$v3))
     }
 
-    pv <- call.pvcontainer(f, pv2)
+    pv <- pvcall(f, pv2)
     s <- make_summary(pv)
 
     expect(is.data.frame(s))

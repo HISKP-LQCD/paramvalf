@@ -10,7 +10,7 @@
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
-call.pvcontainer <- function(func, ...) {
+pvcall <- function(func, ...) {
     joined <- inner_outer_join(...)
 
     debug_mode <- TRUE

@@ -70,6 +70,8 @@ make_summary <- function(pv) {
 
     for (i in 1:nrow(pv$param)) {
         s <- pv$value[[i]]$summary
+        stopifnot(!is.null(s),
+                  is.data.frame(s))
         res[[i]] <- cbind(pv$param[i, , drop = FALSE], s, row.names = NULL)
         rownames(res[[i]]) <- NULL
     }

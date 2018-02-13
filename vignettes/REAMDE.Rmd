@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
 library(ggplot2)
+library(paramvalf)
 ```
 
 # Motivation
@@ -129,9 +130,9 @@ Here we extract the two correlations that we have computed and put them into one
 
 ```{r}
 do_corr_summary <- function(param, value) {
-    summary <- data.frame(corr = c(unlist(value[, 'corr_disp_hp']),
-                                   unlist(value[, 'corr_disp_wt'])),
-                          variable = c('HP', 'Weight'))
+    summary <- data.frame(corr = c(value$corr_disp_hp,
+                                   value$corr_disp_wt),
+                          variable = rep(c('HP', 'Weight'), each = length(value$corr_disp_hp)))
                           
     list(summary = summary)
 }

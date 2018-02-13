@@ -81,7 +81,7 @@ parameter_to_data <- function(pv, func, param_cols_del) {
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
-    applied <- dplyr::mclapply(indices, function (is) {
+    applied <- parallel::mclapply(indices, function (is) {
         is <- unlist(is)
         func(pv$param[is, ], pv$value[is, ])
     })

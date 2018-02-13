@@ -68,6 +68,12 @@ make_name <- function(param) {
 make_summary <- function(pv) {
     res <- list()
 
+    # The `$param` can also be a tibble, if it has been worked on with `dplyr`
+    # commands. For some reason the following code will fail to produce a
+    # simple data frame. It works when the parameter data frame is forced to be
+    # a simple data frame.
+    pv$param <- as.data.frame(pv$param)
+
     for (i in 1:nrow(pv$param)) {
         s <- pv$value[[i]]$summary
         stopifnot(!is.null(s),

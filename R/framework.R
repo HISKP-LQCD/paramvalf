@@ -52,11 +52,26 @@ make_name <- function(param) {
     paste('[', one, ']', sep = '')
 }
 
+#' Converts a special pvcontainer into large data frame.
+#'
+#' When one wants to compare variables across parameter sets, it is desired to
+#' obtain one large data frame which contains all the parameters and certain
+#' summarizing variables. This function takes a specially prepared pvcontainer
+#' which only has the value field `summary` which is a data frame. Each row is
+#' prefixed with the corresponding row from the parameter data frame and all
+#' intermediate results will be row-joined.
+#'
+#' @param pv pvcontainer object where each element of `$value` only contains a
+#'   data frame at `$summary`.
+#'
+#' @return A long data frame which is the concatenation of all the
+#'   `$value[[i]]$summary` data frames and the `$param` columns.
 make_summary <- function(pv) {
     res <- list()
 
     for (i in 1:nrow(pv$param)) {
-        res[[i]] <- cbind(pv$param[i, , drop = FALSE], pv$value[i, , drop = FALSE][[1]])
+        s <- pv$value[[i]]$summary
+        res[[i]] <- cbind(pv$param[i, , drop = FALSE], s, row.names = NULL)
         rownames(res[[i]]) <- NULL
     }
 

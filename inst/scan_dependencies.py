@@ -16,7 +16,7 @@ import jinja2
 pattern_load = re.compile(r'^load\(\'output/([^.]+).Rdata\'\)', re.M)
 pattern_save = re.compile(r'^save\([^,]+, file = \'output/([^.]+).Rdata\'\)', re.M)
 #pattern_call = re.compile(r'(\S+) <- call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
-pattern_call = re.compile(r'^([^#\s]+) <- call\.pvcontainer\(([^)]+)\)', re.M)
+pattern_call = re.compile(r'^([^#\s]+) <- pvcall\(([^)]+)\)', re.M)
 #pattern_sink = re.compile(r'^call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
 pattern_sink = re.compile(r'^pvcall\(([^)]+)\)', re.M)
 

@@ -12,7 +12,6 @@ debug_print <- function(expr) {
     cat('<<<<', name, '<<<<\n\n')
 }
 
-
 #' Extract row from data frame.
 #'
 #' The usual `[.data.frame` requires a `drop = FALSE` in order to return a data
@@ -49,7 +48,7 @@ make_name <- function(param) {
     o <- order(one)
     one <- one[o]
     one <- paste(one, sep = ' ', collapse = ' ')
-    paste('[', one, ']', sep = '')
+    paste0('[', one, ']')
 }
 
 #' Converts a special pvcontainer into large data frame.

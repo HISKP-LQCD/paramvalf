@@ -87,7 +87,7 @@ parameter_to_data <- function(pv, func, param_cols_del) {
     })
 
     list(param = grouped,
-         value = do.call(rbind, applied))
+         value = applied)
 }
 
 pvcall_group <- function(func, param_cols_del, ...) {

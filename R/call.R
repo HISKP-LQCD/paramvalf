@@ -20,7 +20,7 @@ call.pvcontainer <- function(func, ...) {
 
         for (i in 1:nrow(joined$param)) {
             param_row <- get_row(joined$param, i)
-            value_row <- get_row(joined$value, i)
+            value_row <- joined$value[[i]]
 
             value[[i]] <- func(param_row, value_row)
 
@@ -32,7 +32,7 @@ call.pvcontainer <- function(func, ...) {
     else {
         value <- parallel::mclapply(1:nrow(joined$param), function (i) {
             param_row <- get_row(joined$param, i)
-            value_row <- get_row(joined$value, i)
+            value_row <- joined$value[[i]]
 
             v <- func(param_row, value_row)
 
@@ -46,7 +46,7 @@ call.pvcontainer <- function(func, ...) {
     }
 
     list(param = joined$param,
-         value = do.call(rbind, value))
+         value = value)
 }
 
 #' Converts parameters to values.

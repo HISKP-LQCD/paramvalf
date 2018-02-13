@@ -34,29 +34,18 @@ inner_outer_join_impl <- function(a, b) {
 
     param$.dummy <- NULL
 
-    if (!is.null(a$value) && !is.null(b$value)) {
-        # For the values we just take the relevant rows from the individual
-        # containers and bind them to a larger data frame.
-        value <- cbind(a$value[param$.id_a, ], b$value[param$.id_b, ])
-
-        # We need to manually reset the column names because the column name
-        # gets lost when we have a data frame with only one column.
-        colnames(value) <- c(colnames(a$value), colnames(b$value))
-    }
-    else if (!is.null(a$value)) {
-        value <- cbind(a$value[param$.id_a, ])
-        colnames(value) <- colnames(a$value)
-    }
-    else if (!is.null(b$value)) {
-        value <- cbind(b$value[param$.id_b, ])
-        colnames(value) <- colnames(b$value)
-    }
-    else {
-        value <- data.frame()
+    # For the values we just take the relevant lists from the individual values
+    # and concatenate them into a single large list.
+    value <- list()
+    for (i in 1:nrow(param)) {
+        id_a <- param$.id_a[i]
+        id_b <- param$.id_b[i]
+        value[[i]] <- c(a$value[[id_a]], b$value[[id_b]])
     }
 
-    # The row names are of no concern, so we reset them.
-    rownames(value) <- NULL
+    if (length(value) == 0) {
+        value <- NULL
+    }
 
     # The index columns are no longer needed.
     param$.id_a <- NULL

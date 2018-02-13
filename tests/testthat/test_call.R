@@ -16,8 +16,8 @@ test_that('one single parameter', {
     pv <- call.pvcontainer(f, p0)
 
     expect_equal(colnames(pv$param), c('p0'))
-    expect_equal(colnames(pv$value), c('v0'))
-    expect_equal(pv$value[[1, 1]], 3.2)
+    expect_equal(names(pv$value[[1]]), c('v0'))
+    expect_equal(pv$value[[1]]$v0, 3.2)
 })
 
 # Similarly we do two structures with only one parameter each.
@@ -30,7 +30,7 @@ test_that('two single parameter', {
     pv <- call.pvcontainer(f, p0, p1)
 
     expect_equal(colnames(pv$param), c('p0', 'p1'))
-    expect_equal(colnames(pv$value), c('v0', 'v1'))
+    expect_equal(names(pv$value[[1]]), c('v0', 'v1'))
 })
 
 test_that('one two parameters', {
@@ -42,5 +42,5 @@ test_that('one two parameters', {
     pv <- call.pvcontainer(f, p3)
 
     expect_equal(colnames(pv$param), c('p3a', 'p3b'))
-    expect_equal(colnames(pv$value), c('v0', 'v1'))
+    expect_equal(names(pv$value[[1]]), c('v0', 'v1'))
 })

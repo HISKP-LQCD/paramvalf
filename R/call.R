@@ -28,7 +28,7 @@ pvcall <- function(func, ...) {
         }
     }
     else {
-        value <- parallel::mclapply(1:nrow(joined$param), function (i) {
+        value <- pbmcapply::pbmclapply(1:nrow(joined$param), function (i) {
             param_row <- get_row(joined$param, i)
             value_row <- joined$value[[i]]
 
@@ -79,7 +79,7 @@ parameter_to_data <- function(pv, func, param_cols_del) {
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
-    applied <- parallel::mclapply(indices, function (is) {
+    applied <- pbmcapply::pbmclapply(indices, function (is) {
         is <- unlist(is)
         func(pv$param[is, ], list_transpose(pv$value[is]))
     })

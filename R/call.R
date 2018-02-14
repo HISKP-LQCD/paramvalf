@@ -13,8 +13,6 @@
 pvcall <- function(func, ...) {
     joined <- inner_outer_join(...)
 
-    debug_mode <- TRUE
-
     if (exists('debug_mode') && debug_mode) {
         value <- list()
 

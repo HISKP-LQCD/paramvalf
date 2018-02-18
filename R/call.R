@@ -7,13 +7,15 @@
 #'
 #' @param func Function which takes a `param` and a `value` parameter
 #' @param ... One or more PV containers
+#' @param serial Do not use `mclapply` but a plain `for`-loop. This is useful
+#'   if one wants to create a plot within the function `func`.
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
-pvcall <- function(func, ...) {
+pvcall <- function(func, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
 
-    if (exists('debug_mode') && debug_mode) {
+    if (exists('debug_mode') && debug_mode || serial) {
         value <- list()
 
         for (i in 1:nrow(joined$param)) {

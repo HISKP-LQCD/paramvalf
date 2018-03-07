@@ -1,3 +1,5 @@
+library(dplyr)
+
 #' Calls a function for each row of the parameters.
 #'
 #' The given PV containers are first joined into a single one. Then for each row
@@ -24,8 +26,8 @@ pvcall <- function(func, ..., serial = FALSE) {
 
             value[[i]] <- func(param_row, value_row)
 
-            if (!is.list(value[[i]])) {
-                stop('Return value must be a list.')
+            if (!(is.list(value[[i]]) || is.na(value[[i]]))) {
+                stop('Return value must be a list or NA.')
             }
         }
     }
@@ -36,8 +38,8 @@ pvcall <- function(func, ..., serial = FALSE) {
 
             v <- func(param_row, value_row)
 
-            if (!is.list(v)) {
-                stop('Return value must be a list.')
+            if (!(is.list(v) || is.na(v))) {
+                stop('Return value must be a list, or NA.')
             }
 
             return (v)
@@ -45,8 +47,17 @@ pvcall <- function(func, ..., serial = FALSE) {
 
     }
 
-    list(param = joined$param,
-         value = value)
+    # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
+    not_na <- unlist(lapply(value, function (x) !identical(x, NA)))
+
+    # debug_print(not_na)
+    # debug_print(joined$param)
+    # debug_print(joined$param[not_na, ])
+    # debug_print(value)
+    # debug_print(value[not_na])
+
+    list(param = joined$param[not_na, , drop = FALSE],
+         value = value[not_na])
 }
 
 #' Converts parameters to values.
@@ -65,7 +76,7 @@ pvcall <- function(func, ..., serial = FALSE) {
 #' @param param_cols_del Character vector with the column names in the `param`
 #'   data frame that are to be converted into `value` columns
 #' @return Another container
-parameter_to_data <- function(pv, func, param_cols_del) {
+parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
     param_cols_keep <- setdiff(param_cols_all, param_cols_del)
@@ -81,16 +92,28 @@ parameter_to_data <- function(pv, func, param_cols_del) {
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
-    applied <- pbmcapply::pbmclapply(indices, function (is) {
-        is <- unlist(is)
-        func(pv$param[is, ], list_transpose(pv$value[is]))
-    })
+    if (exists('debug_mode') && debug_mode || serial) {
+        applied <- list()
+        for (i in 1:length(indices)) {
+            is <- indices[[i]]
+            is <- unlist(is)
+            applied[[i]] <- func(pv$param[is, ], list_transpose(pv$value[is]))
+        }
+    } else {
+        applied <- pbmcapply::pbmclapply(indices, function (is) {
+            is <- unlist(is)
+            func(pv$param[is, ], list_transpose(pv$value[is]))
+        })
+    }
 
-    list(param = grouped,
-         value = applied)
+    # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
+    not_na <- sapply(applied, is.na)
+
+    list(param = grouped[not_na, ],
+         value = applied[not_na])
 }
 
-pvcall_group <- function(func, param_cols_del, ...) {
+pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
-    parameter_to_data(joined, func, param_cols_del)
+    parameter_to_data(joined, func, param_cols_del, serial)
 }

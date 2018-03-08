@@ -14,6 +14,8 @@ library(dplyr)
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
+#'
+#' @export
 pvcall <- function(func, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
 
@@ -76,6 +78,8 @@ pvcall <- function(func, ..., serial = FALSE) {
 #' @param param_cols_del Character vector with the column names in the `param`
 #'   data frame that are to be converted into `value` columns
 #' @return Another container
+#'
+#' @import dplyr
 parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
@@ -107,12 +111,28 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     }
 
     # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
-    not_na <- sapply(applied, is.na)
+    not_na <- unlist(lapply(applied, function (x) !identical(x, NA)))
 
     list(param = grouped[not_na, ],
          value = applied[not_na])
 }
 
+
+#' Converts parameters to data and then does the same as pvcall.
+#'
+#' @param func A function which expects \code{param} and \code{value} as
+#'   parameters. These are lists with the names of from the \code{...} parameter
+#'   here. Each element contains a list with the number of elements that have
+#'   the same set of parameters after the grouping by \code{param_cols_del}.
+#' @param param_cols_del Character vector containing the names of the parameter
+#'   colums that are to be converted into values. The parameter data frame that
+#'   is created after the inner-outer-join will be grouped by all columns except
+#'   the ones listed here.
+#' @param ... One or more pvcontainer objects.
+#' @param serial If true, execution will be distributed onto multiple cores.
+#'
+#' @return A pvcontainer object.
+#' @export
 pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
     parameter_to_data(joined, func, param_cols_del, serial)

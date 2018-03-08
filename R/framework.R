@@ -4,6 +4,8 @@
 #' the expression. It is closed by a footer which also contains the expression.
 #'
 #' @param expr Any expression
+#'
+#' @export
 debug_print <- function(expr) {
     e <- rlang::enquo(expr)
     name <- deparse(substitute(e))
@@ -43,6 +45,8 @@ get_row <- function(df, i) {
 #'
 #' @param param One line of a data frame
 #' @return Name
+#'
+#' @export
 make_name <- function(param) {
     one <- paste(names(param), param, sep = '=', collapse = NULL)
     o <- order(one)
@@ -65,6 +69,8 @@ make_name <- function(param) {
 #'
 #' @return A long data frame which is the concatenation of all the
 #'   `$value[[i]]$summary` data frames and the `$param` columns.
+#'
+#' @export
 make_summary <- function(pv) {
     res <- list()
 

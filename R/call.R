@@ -49,6 +49,9 @@ pvcall <- function(func, ..., serial = FALSE) {
 
     }
 
+    joined$value <- NULL
+    gc()
+
     # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
     not_na <- unlist(lapply(value, function (x) !identical(x, NA)))
 
@@ -135,5 +138,10 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
 #' @export
 pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
-    parameter_to_data(joined, func, param_cols_del, serial)
+    rval <- parameter_to_data(joined, func, param_cols_del, serial)
+
+    rm(joined)
+    gc()
+
+    return (rval)
 }

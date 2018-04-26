@@ -77,7 +77,7 @@ def main():
     dot_rendered = dot_template.render(files=list(files), rmds=files_rmd)
     with open('autoflow.dot', 'w') as f:
         f.write(dot_rendered)
-    subprocess.run(['dot', '-T', 'pdf', 'autoflow.dot', '-o', 'autoflow.pdf'])
+    subprocess.check_call(['dot', '-T', 'pdf', 'autoflow.dot', '-o', 'autoflow.pdf'])
 
 
     make = [dict(dest=['output/{}.Rdata'.format(call['rvalue']) for call in f['calls']],

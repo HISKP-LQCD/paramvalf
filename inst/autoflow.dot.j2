@@ -7,38 +7,18 @@ digraph {
   nodesep = 0.5
 
   {% for file in files -%}
-  subgraph cluster_{{ file.barename }} {
-    label = "{{ file.basename }}"
-    style = filled
-    fillcolor = "0.0 0.0 0.95"
+  "{{ file.basename }}"
 
-    {#
-    // Loads.
-    {% for var in file.loads -%}
-    {% endfor -%}
-    #}
-
-    {% for var in file.saves -%}
-    {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
-    {% endfor -%}
-
-    {% for call in file.calls -%}
-    {{ call.name }} [shape = rectangle, style = filled, fillcolor = "/pastel19/5"]
-    {% endfor -%}
-    
-    {% for sink in file.sinks -%}
-    {{ sink.name }} [shape = rectangle, style = filled, fillcolor = "/pastel19/5"]
-    {% endfor -%}
-  }
+  {% for var in file.loads -%}
+  {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
+  {% endfor -%}
+  {% for var in file.saves -%}
+  {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
+  {% endfor -%}
   {% endfor -%}
 
   {% for file in files -%}
-  {% for call in file.calls -%}
-  { {{ call.args|join(', ') }} } -> {{ call.name }} -> {{ call.rvalue }}
-  {% endfor -%}
-  {% for sink in file.sinks -%}
-  { {{ sink.args|join(', ') }} } -> {{ sink.name }}
-  {% endfor -%}
+  { {{ file.loads|join(', ') }} } -> "{{ file.basename }}" -> { {{ file.saves|join(', ') }} }
   {% endfor -%}
 
   {%- for file in rmds %}

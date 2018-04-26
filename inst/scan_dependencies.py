@@ -15,10 +15,6 @@ import jinja2
 
 pattern_load = re.compile(r'^load\(\'output/([^.]+).Rdata\'\)', re.M)
 pattern_save = re.compile(r'^save\([^,]+, file = \'output/([^.]+).Rdata\'\)', re.M)
-#pattern_call = re.compile(r'(\S+) <- call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
-pattern_call = re.compile(r'^([^#\s]+) <- pvcall\(([^)]+)\)', re.M)
-#pattern_sink = re.compile(r'^call\.pvcontainer\(([^,)]+)(?:, ([^,)]+))+\)', re.M)
-pattern_sink = re.compile(r'^pvcall\(([^)]+)\)', re.M)
 
 def process_file(filename):
     with open(filename) as f:
@@ -26,29 +22,6 @@ def process_file(filename):
 
     loads = pattern_load.findall(contents)
     saves = pattern_save.findall(contents)
-    calls = pattern_call.findall(contents)
-    sinks = pattern_sink.findall(contents)
-
-    calls2 = []
-    for call in calls:
-        rvalue = call[0]
-
-        tokens = call[1].split(', ')
-        name = tokens[0]
-        args = tokens[1:]
-
-        calls2.append(dict(rvalue=rvalue,
-                           name=name,
-                           args=args))
-        
-    sinks2 = []
-    for sink in sinks:
-        tokens = sink.split(', ')
-        name = tokens[0]
-        args = tokens[1:]
-
-        sinks2.append(dict(name=name,
-                           args=args))
 
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
@@ -57,9 +30,11 @@ def process_file(filename):
                 basename=basename.replace('-', '_'),
                 barename=barename.replace('-', '_'),
                 loads=loads,
-                calls=calls2,
-                saves=saves,
-                sinks=sinks2)
+                saves=saves)
+
+
+def add_rdata(barenames):
+    return ['output/{}.Rdata'.format(x) for x in barenames]
 
 
 def main():
@@ -79,10 +54,8 @@ def main():
         f.write(dot_rendered)
     subprocess.check_call(['dot', '-T', 'pdf', 'autoflow.dot', '-o', 'autoflow.pdf'])
 
-
-    make = [dict(dest=['output/{}.Rdata'.format(call['rvalue']) for call in f['calls']],
-                 src=[f['filename']] + ['output/{}.Rdata'.format(elem)
-                      for elem in f['loads']],
+    make = [dict(dest=add_rdata(f['saves']),
+                 src=[f['filename']] + add_rdata(f['loads']),
                  task='Rscript $<')
             for f in files]
 

@@ -106,6 +106,8 @@ make_summary <- function(pv) {
 #' Heavily inspired by a
 #' [Stack Overflow post of Victor K.](https://stackoverflow.com/a/16179574/653152).
 #' The snippet is implictly licensed under the MIT/Expat license.
+#'
+#' @export
 list_transpose <- function(ll) {
     stopifnot(all_names_equal(ll))
     n <- length(ll[[1]])

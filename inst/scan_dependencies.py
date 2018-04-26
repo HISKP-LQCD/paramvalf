@@ -10,6 +10,7 @@ import os
 import pprint
 import re
 import subprocess
+import yaml
 
 import jinja2
 
@@ -40,7 +41,7 @@ def add_rdata(barenames):
 def main():
     options = _parse_args()
 
-    files = [process_file(filename) for filename in glob.glob('R/*.R')]
+    files = [process_file(filename) for filename in glob.glob('paramval/*.R')]
     files_rmd = [process_file(filename) for filename in glob.glob('*.Rmd')]
 
     source_dir = os.path.dirname(__file__)
@@ -73,6 +74,12 @@ def main():
     make_rendered = make_template.render(make=make, all=make_all, source_dir=source_dir)
     with open('Makefile', 'w') as f:
         f.write(make_rendered)
+
+    state = dict(files_R=files,
+                 files_rmd=files_rmd)
+
+    with open('output/dependencies.yml', 'w') as f:
+        yaml.dump(state, f, default_flow_style=False)
 
 
 def _parse_args():

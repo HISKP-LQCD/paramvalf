@@ -19,34 +19,26 @@ library(dplyr)
 pvcall <- function(func, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
 
-    if (exists('debug_mode') && debug_mode || serial) {
-        value <- list()
+    closure <- function (i) {
+        param_row <- get_row(joined$param, i)
+        value_row <- joined$value[[i]]
 
-        for (i in 1:nrow(joined$param)) {
-            param_row <- get_row(joined$param, i)
-            value_row <- joined$value[[i]]
+        v <- func(param_row, value_row)
 
-            value[[i]] <- func(param_row, value_row)
+        stopifnot(!is.null(v))
 
-            if (!(is.list(value[[i]]) || is.na(value[[i]]))) {
-                stop('Return value must be a list or NA.')
-            }
+        if (!(is.list(v) || is.na(v))) {
+            stop('Return value must be a list, or NA.')
         }
+
+        return (v)
     }
-    else {
-        value <- pbmcapply::pbmclapply(1:nrow(joined$param), function (i) {
-            param_row <- get_row(joined$param, i)
-            value_row <- joined$value[[i]]
 
-            v <- func(param_row, value_row)
-
-            if (!(is.list(v) || is.na(v))) {
-                stop('Return value must be a list, or NA.')
-            }
-
-            return (v)
-        })
-
+    if (exists('debug_mode') && debug_mode || serial) {
+        value <- lapply(1:nrow(joined$param), closure)
+    } else {
+        #value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
+        value <- parallel::mclapply(1:nrow(joined$param), closure)
     }
 
     joined$value <- NULL
@@ -108,18 +100,15 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
+    closure <- function (is) {
+        is <- unlist(is)
+        func(pv$param[is, ], list_transpose(pv$value[is]))
+    }
+
     if (exists('debug_mode') && debug_mode || serial) {
-        applied <- list()
-        for (i in 1:length(indices)) {
-            is <- indices[[i]]
-            is <- unlist(is)
-            applied[[i]] <- func(pv$param[is, ], list_transpose(pv$value[is]))
-        }
+        applied <- lapply(indices, closure)
     } else {
-        applied <- pbmcapply::pbmclapply(indices, function (is) {
-            is <- unlist(is)
-            func(pv$param[is, ], list_transpose(pv$value[is]))
-        })
+        applied <- parallel::mclapply(indices, closure)
     }
 
     # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.

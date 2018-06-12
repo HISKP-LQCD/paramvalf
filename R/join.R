@@ -14,6 +14,11 @@ inner_outer_join_impl <- function(a, b) {
     ap <- a$param
     bp <- b$param
 
+    # The length of the value section (if present) must have exactly the same
+    # number of elements as the parameter section.
+    stopifnot(is.null(a$value) || nrow(a$param) == length(a$value))
+    stopifnot(is.null(b$value) || nrow(b$param) == length(b$value))
+
     # Label the rows of the parameters such that we know which value rows to
     # use later.
     ap$.id_a <- 1:nrow(ap)
@@ -40,6 +45,10 @@ inner_outer_join_impl <- function(a, b) {
     for (i in 1:nrow(param)) {
         id_a <- param$.id_a[i]
         id_b <- param$.id_b[i]
+
+        stopifnot(is.null(a$value) || id_a <= length(a$value))
+        stopifnot(is.null(b$value) || id_b <= length(b$value))
+
         value[[i]] <- c(a$value[[id_a]], b$value[[id_b]])
     }
 

@@ -52,14 +52,23 @@ pvcall <- function(func, ..., serial = FALSE) {
     joined$value <- NULL
     gc()
 
-    # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
+    # The user function is allowed to return `NA` here to signal that the
+    # combination of the parameters is not sensible. We must therefore remove
+    # the row from the parameter data frame and the value list.
     not_na <- unlist(lapply(value, function (x) !identical(x, NA)))
 
-    # debug_print(not_na)
-    # debug_print(joined$param)
-    # debug_print(joined$param[not_na, ])
-    # debug_print(value)
-    # debug_print(value[not_na])
+    # For some reason since 2018-06-11 I see that some elements of `value` are
+    # just `NULL` when running the parallel version with `pbmclapply`. The
+    # assertion in the closure does not seem to suffice in detecting this. This
+    # leads to hard to understand follow-up errors, therefore we also do a
+    # check here to assert that nothing is `NULL`.
+    not_null <- unlist(lapply(value, function (x) !is.null(x)))
+
+    if (!all(not_null)) {
+        cat('Some return values are `NULL`. This might be an issue with `pbmclapply`. In the following, every `FALSE` marks a `NULL` value:\n')
+        print(not_null)
+        stop()
+    }
 
     list(param = joined$param[not_na, , drop = FALSE],
          value = value[not_na])

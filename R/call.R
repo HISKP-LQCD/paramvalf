@@ -56,6 +56,14 @@ pvcall <- function(func, ..., serial = FALSE) {
     # check here to assert that nothing is `NULL`.
     not_null <- unlist(lapply(value, function (x) !is.null(x)))
 
+    # Sometimes the closure fails to be evaluated and the return value is just
+    # a `try-error` instance. We want to abort if that is the case.
+    if (any(inherits(value, 'try-error'))) {
+        cat('Some of the function calls failed. Here is the return value:\n')
+        print(value)
+        stop()
+    }
+
     if (!all(not_null)) {
         cat('Some return values are `NULL`. This might be an issue with `pbmclapply`. In the following, every `FALSE` marks a `NULL` value:\n')
         print(not_null)
@@ -111,10 +119,27 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
         applied <- parallel::mclapply(indices, closure)
     }
 
-    # The user function is allowed to return `NA` here to signal that the combination of the parameters is not sensible. We must therefore remove the row from the parameter data frame and the value list.
+    # The user function is allowed to return `NA` here to signal that the
+    # combination of the parameters is not sensible. We must therefore remove
+    # the row from the parameter data frame and the value list.
     not_na <- unlist(lapply(applied, function (x) !identical(x, NA)))
 
-    list(param = grouped[not_na, ],
+    # For some reason since 2018-06-11 I see that some elements of `value` are
+    # just `NULL` when running the parallel version with `pbmclapply`. The
+    # assertion in the closure does not seem to suffice in detecting this. This
+    # leads to hard to understand follow-up errors, therefore we also do a
+    # check here to assert that nothing is `NULL`.
+    not_null <- unlist(lapply(value, function (x) !is.null(x)))
+
+    # Sometimes the closure fails to be evaluated and the return value is just
+    # a `try-error` instance. We want to abort if that is the case.
+    if (any(inherits(value, 'try-error'))) {
+        cat('Some of the function calls failed. Here is the return value:\n')
+        print(value)
+        stop()
+    }
+
+    list(param = grouped[not_na, , drop = FALSE],
          value = applied[not_na])
 }
 

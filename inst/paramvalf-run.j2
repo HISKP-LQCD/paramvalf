@@ -1,0 +1,12 @@
+#!/bin/bash
+# {{ edit_warning }}
+
+set -e
+set -u
+
+echo "$( tput bold )$( tput setaf 6 )Scanning dependencies ...$( tput sgr0 )"
+python3 {{ source_dir }}/scan_dependencies.py
+
+make -f paramvalf-dependencies.mak "$@"
+
+{# vim: set ft=sh :#}

@@ -38,6 +38,9 @@ def add_rdata(barenames):
     return ['output/{}.Rdata'.format(x) for x in barenames]
 
 
+edit_warning = 'This file is automatically created, do not edit by hand.'
+
+
 def main():
     options = _parse_args()
 
@@ -47,13 +50,14 @@ def main():
     source_dir = os.path.dirname(__file__)
 
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(source_dir))
-    dot_template = env.get_template('autoflow.dot.j2')
-    make_template = env.get_template('Makefile.j2')
+    dot_template = env.get_template('paramvalf-data-flow.dot.j2')
+    make_template = env.get_template('paramvalf-dependencies.mak.j2')
+    sh_template = env.get_template('paramvalf-run.j2')
 
-    dot_rendered = dot_template.render(files=list(files), rmds=files_rmd)
-    with open('autoflow.dot', 'w') as f:
+    dot_rendered = dot_template.render(files=list(files), rmds=files_rmd, edit_warning=edit_warning)
+    with open('paramvalf-data-flow.dot', 'w') as f:
         f.write(dot_rendered)
-    subprocess.check_call(['dot', '-T', 'pdf', 'autoflow.dot', '-o', 'autoflow.pdf'])
+    subprocess.check_call(['dot', '-T', 'pdf', 'paramvalf-data-flow.dot', '-o', 'paramvalf-data-flow.pdf'])
 
     make = [dict(dest=add_rdata(f['saves']),
                  src=[f['filename']] + add_rdata(f['loads']),
@@ -71,9 +75,14 @@ def main():
                 for dest in item['dest']]
 
 
-    make_rendered = make_template.render(make=make, all=make_all, source_dir=source_dir)
-    with open('Makefile', 'w') as f:
+    make_rendered = make_template.render(make=make, all=make_all, source_dir=source_dir, edit_warning=edit_warning)
+    with open('paramvalf-dependencies.mak', 'w') as f:
         f.write(make_rendered)
+
+    sh_rendered = sh_template.render(source_dir=source_dir, edit_warning=edit_warning)
+    with open('paramvalf-run', 'w') as f:
+        f.write(sh_rendered)
+    os.chmod('paramvalf-run', 0o755)
 
     state = dict(files_R=files,
                  files_rmd=files_rmd)

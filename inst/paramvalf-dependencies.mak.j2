@@ -1,6 +1,6 @@
+# {{ edit_warning }}
+
 self:
-	@echo "$$( tput bold )$$( tput setaf 6 )Scanning dependencies ...$$( tput sgr0 )"
-	python3 {{ source_dir }}/scan_dependencies.py
 	$(MAKE) all
 
 all: {{ all|join(' ') }}
@@ -13,4 +13,4 @@ all: {{ all|join(' ') }}
 {% endif %}
 {% endfor -%}
 
-# vim: ft=make
+{# vim: ft=make :#}

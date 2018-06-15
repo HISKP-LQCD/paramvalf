@@ -129,13 +129,13 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     # assertion in the closure does not seem to suffice in detecting this. This
     # leads to hard to understand follow-up errors, therefore we also do a
     # check here to assert that nothing is `NULL`.
-    not_null <- unlist(lapply(value, function (x) !is.null(x)))
+    not_null <- unlist(lapply(applied, function (x) !is.null(x)))
 
     # Sometimes the closure fails to be evaluated and the return value is just
     # a `try-error` instance. We want to abort if that is the case.
-    if (any(inherits(value, 'try-error'))) {
+    if (any(inherits(applied, 'try-error'))) {
         cat('Some of the function calls failed. Here is the return value:\n')
-        print(value)
+        print(applied)
         stop()
     }
 

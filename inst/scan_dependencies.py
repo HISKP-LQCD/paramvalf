@@ -11,8 +11,8 @@ import os
 import pprint
 import re
 import subprocess
-import yaml
 
+import yaml
 import jinja2
 
 pattern_load = re.compile(r'^load\(\'output/([^.]+).Rdata\'\)', re.M)
@@ -85,8 +85,29 @@ def main():
                 for item in make
                 for dest in item['dest']]
 
+    make_clusters = []
 
-    make_rendered = make_template.render(make=make, all=make_all, source_dir=source_dir, edit_warning=edit_warning)
+    if os.path.isfile('paramvalf-clusters.yml'):
+        with open('paramvalf-clusters.yml') as f:
+            clusters = yaml.load(f)
+
+        for cluster_key, cluster_value in clusters.items():
+            targets = [target
+                       for target in make_all
+                       for regex in cluster_value
+                       if re.match(regex, target)]
+            make_clusters.append(dict(target=cluster_key,
+                                      depends=list(sorted(targets))))
+
+    print(make_clusters)
+
+
+    make_rendered = make_template.render(make=make,
+                                         all=make_all,
+                                         source_dir=source_dir,
+                                         edit_warning=edit_warning,
+                                         clusters=make_clusters)
+
     with open('paramvalf-dependencies.mak', 'w') as f:
         f.write(make_rendered)
 

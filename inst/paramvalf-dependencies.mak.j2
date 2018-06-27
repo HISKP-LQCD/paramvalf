@@ -2,6 +2,10 @@
 
 all: {{ all|join(' ') }}
 
+{% for cluster in clusters %}
+{{ cluster.target }}: {{ cluster.depends|join(' ') }}
+{% endfor %}
+
 {% for elem in make -%}
 {% if elem.dest|length > 0 -%}
 {{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}

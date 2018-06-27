@@ -1,16 +1,13 @@
 # {{ edit_warning }}
 
-self:
-	$(MAKE) all
-
 all: {{ all|join(' ') }}
 
 {% for elem in make -%}
 {% if elem.dest|length > 0 -%}
-{{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }}
+{{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}
 	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
 	time {{ elem.task }}
 {% endif %}
 {% endfor -%}
 
-{# vim: ft=make :#}
+{# vim: set ft=make :#}

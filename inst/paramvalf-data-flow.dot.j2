@@ -17,10 +17,13 @@ digraph {
   {% for var in file.saves -%}
   {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
   {% endfor -%}
+  {% for var in file.depends -%}
+  "{{ var }}" [shape = box, style = filled, fillcolor = "/pastel19/3"]
+  {% endfor -%}
   {% endfor -%}
 
   {% for file in files -%}
-  { {{ file.loads|join(', ') }} } -> "{{ file.basename }}" -> { {{ file.saves|join(', ') }} }
+  { {{ file.loads_depends|join(', ') }} } -> "{{ file.basename }}" -> { {{ file.saves|join(', ') }} }
   {% endfor -%}
 
   {%- for file in rmds %}

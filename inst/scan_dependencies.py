@@ -6,6 +6,7 @@
 import argparse
 import collections
 import glob
+import glob
 import os
 import pprint
 import re
@@ -15,6 +16,7 @@ import yaml
 import jinja2
 
 pattern_load = re.compile(r'^load\(\'output/([^.]+).Rdata\'\)', re.M)
+pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
 pattern_save = re.compile(r'^save\([^,]+, file = \'output/([^.]+).Rdata\'\)', re.M)
 
 def process_file(filename):
@@ -24,6 +26,10 @@ def process_file(filename):
     loads = pattern_load.findall(contents)
     saves = pattern_save.findall(contents)
 
+    depends = [elem
+               for g in pattern_depend.findall(contents)
+               for elem in glob.glob(g)]
+
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
 
@@ -31,7 +37,9 @@ def process_file(filename):
                 basename=basename.replace('-', '_'),
                 barename=barename.replace('-', '_'),
                 loads=loads,
-                saves=saves)
+                saves=saves,
+                depends=depends,
+                loads_depends=loads + ['"{}"'.format(x) for x in depends])
 
 
 def add_rdata(barenames):
@@ -54,13 +62,16 @@ def main():
     make_template = env.get_template('paramvalf-dependencies.mak.j2')
     sh_template = env.get_template('paramvalf-run.j2')
 
-    dot_rendered = dot_template.render(files=list(files), rmds=files_rmd, edit_warning=edit_warning)
+    dot_rendered = dot_template.render(files=list(files),
+                                       rmds=files_rmd,
+                                       edit_warning=edit_warning)
     with open('paramvalf-data-flow.dot', 'w') as f:
         f.write(dot_rendered)
     subprocess.check_call(['dot', '-T', 'pdf', 'paramvalf-data-flow.dot', '-o', 'paramvalf-data-flow.pdf'])
 
     make = [dict(dest=add_rdata(f['saves']),
                  src=[f['filename']] + add_rdata(f['loads']),
+                 depends=f['depends'],
                  task='Rscript $<')
             for f in files]
 

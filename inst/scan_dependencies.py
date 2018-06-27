@@ -99,9 +99,6 @@ def main():
             make_clusters.append(dict(target=cluster_key,
                                       depends=list(sorted(targets))))
 
-    print(make_clusters)
-
-
     make_rendered = make_template.render(make=make,
                                          all=make_all,
                                          source_dir=source_dir,

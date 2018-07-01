@@ -1,5 +1,3 @@
-library(dplyr)
-
 #' Calls a function for each row of the parameters.
 #'
 #' The given PV containers are first joined into a single one. Then for each row
@@ -37,8 +35,8 @@ pvcall <- function(func, ..., serial = FALSE) {
     if (exists('debug_mode') && debug_mode || serial) {
         value <- lapply(1:nrow(joined$param), closure)
     } else {
-        #value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
-        value <- parallel::mclapply(1:nrow(joined$param), closure)
+        value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
+        #value <- parallel::mclapply(1:nrow(joined$param), closure)
     }
 
     joined$value <- NULL
@@ -101,8 +99,8 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     # the `value` later on.
     pv$param$.idx <- 1:nrow(pv$param)
 
-    grouped <- pv$param %>%
-        group_by_at(param_cols_keep) %>%
+    grouped <- pv$param dplyr::`%>%`
+        group_by_at(param_cols_keep) dplyr::`%>%`
         summarize(.indices = list(.idx))
 
     indices <- grouped$.indices
@@ -116,7 +114,8 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     if (exists('debug_mode') && debug_mode || serial) {
         applied <- lapply(indices, closure)
     } else {
-        applied <- parallel::mclapply(indices, closure)
+        applied <- pbmcapply::pbmclapply(indices, closure)
+        #applied <- parallel::mclapply(indices, closure)
     }
 
     # The user function is allowed to return `NA` here to signal that the

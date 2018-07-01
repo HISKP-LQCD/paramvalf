@@ -1,4 +1,4 @@
-pv_filter(pv, ...) {
+filter.paramval <- function (pv, ...) {
     pv$param$.idx <- 1:nrow(pv$param)
 
     param_filtered <- dplyr::filter(pv$param, ...)

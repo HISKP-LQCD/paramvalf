@@ -91,6 +91,8 @@ pvcall <- function(func, ..., serial = FALSE) {
 #'
 #' @import dplyr
 parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
+    library(dplyr)
+
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
     param_cols_keep <- setdiff(param_cols_all, param_cols_del)
@@ -99,8 +101,8 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     # the `value` later on.
     pv$param$.idx <- 1:nrow(pv$param)
 
-    grouped <- pv$param dplyr::`%>%`
-        group_by_at(param_cols_keep) dplyr::`%>%`
+    grouped <- pv$param %>%
+        group_by_at(param_cols_keep) %>%
         summarize(.indices = list(.idx))
 
     indices <- grouped$.indices

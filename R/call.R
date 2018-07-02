@@ -35,8 +35,8 @@ pvcall <- function(func, ..., serial = FALSE) {
     if (exists('debug_mode') && debug_mode || serial) {
         value <- lapply(1:nrow(joined$param), closure)
     } else {
-        value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
-        #value <- parallel::mclapply(1:nrow(joined$param), closure)
+        #value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
+        value <- parallel::mclapply(1:nrow(joined$param), closure)
     }
 
     joined$value <- NULL
@@ -116,8 +116,8 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     if (exists('debug_mode') && debug_mode || serial) {
         applied <- lapply(indices, closure)
     } else {
-        applied <- pbmcapply::pbmclapply(indices, closure)
-        #applied <- parallel::mclapply(indices, closure)
+        #applied <- pbmcapply::pbmclapply(indices, closure)
+        applied <- parallel::mclapply(indices, closure)
     }
 
     # The user function is allowed to return `NA` here to signal that the

@@ -39,12 +39,15 @@ make_filename <- function (varname) {
 
 #' @export
 pv_save <- function (x) {
-    filename <- make_filename(deparse(substitute(x)))
-    save(x, file = filename)
+    varname <- deparse(substitute(x))
+    filename <- make_filename(varname)
+    save(list = varname, file = filename)
 }
 
 #' @export
 pv_load <- function (x) {
     filename <- make_filename(deparse(substitute(x)))
-    load(filename, envir = parent.frame())
+    #cat('Loading from ', filename, '\n', sep = '')
+    e = parent.frame()
+    load(filename, envir = e)
 }

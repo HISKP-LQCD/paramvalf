@@ -1,8 +1,21 @@
 #' Get path to current script file
 #'
 #' https://stackoverflow.com/a/15373917/653152
+#'
+#' @export
 this_file <- function() {
     cmdArgs <- commandArgs(trailingOnly = FALSE)
+
+    match <- grep('--interactive', cmdArgs)
+    if (length(match) > 0) {
+        return (paste0(getwd(), '/dummy'))
+    }
+
+    match <- grep('rmarkdown::render', cmdArgs)
+    if (length(match) > 0) {
+        return (paste0(getwd(), '/dummy'))
+    }
+
     needle <- "--file="
     match <- grep(needle, cmdArgs)
     if (length(match) > 0) {

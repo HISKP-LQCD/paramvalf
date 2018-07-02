@@ -91,7 +91,6 @@ pvcall <- function(func, ..., serial = FALSE) {
 #'
 #' @import dplyr
 parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
-    library(dplyr)
 
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)

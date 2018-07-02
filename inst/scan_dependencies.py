@@ -128,9 +128,10 @@ def process_cluster(cluster, templates):
             for f in files_paramval]
 
     for f in files_rmd:
-        make.append(dict(dest=[f['filename']],
-                         src=[f['barename']] + f['loads'],
-                         task='Rscript -e "rmarkdown::render(\'{}.Rmd\')"'.format(f['barename'])))
+        make.append(dict(
+            dest=['vignette/{}/{}.pdf'.format(cluster, f['barename'])],
+            src=[f['filename']] + f['loads'],
+            task='Rscript -e "rmarkdown::render(\'{}\')"'.format(f['filename'])))
 
     make_all = [dest
                 for item in make

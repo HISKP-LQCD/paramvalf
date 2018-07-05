@@ -15,16 +15,17 @@ import subprocess
 import yaml
 import jinja2
 
-pattern_load = re.compile(r'^pv_load\(([^()]+)\)', re.M)
+pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
-pattern_save = re.compile(r'^pv_save\(([^()]+)\)', re.M)
+pattern_save = re.compile(r'^pv_save\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 
 root_dirs = ['paramval', 'vignette']
 
 source_dir = os.path.dirname(__file__)
 
 
-def resolve_path(varname, cluster):
+def resolve_path(match):
+    cluster, varname = match
     return os.path.normpath('output/{}/{}.Rdata'.format(cluster, varname))
 
 
@@ -32,8 +33,8 @@ def process_file(filename, cluster):
     with open(filename) as f:
         contents = f.read()
 
-    loads = [resolve_path(var, cluster) for var in pattern_load.findall(contents)]
-    saves = [resolve_path(var, cluster) for var in pattern_save.findall(contents)]
+    loads = list([resolve_path(match) for match in pattern_load.findall(contents)])
+    saves = list([resolve_path(match) for match in pattern_save.findall(contents)])
 
     depends = [os.path.normpath(elem)
                for g in pattern_depend.findall(contents)
@@ -42,13 +43,15 @@ def process_file(filename, cluster):
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
 
-    return dict(filename=os.path.normpath(filename),
+    data = dict(filename=os.path.normpath(filename),
                 basename=basename.replace('-', '_'),
                 barename=barename.replace('-', '_'),
                 loads=loads,
                 saves=saves,
                 depends=depends,
                 loads_depends=loads + depends)
+
+    return data
 
 
 def add_rdata(barenames):

@@ -1,65 +1,41 @@
-#' Get path to current script file
+#' Get path to root directory
 #'
-#' https://stackoverflow.com/a/15373917/653152
+#' Traverses the directory hierarchy upwards until it has the found the root of
+#' the analysis. This root must be marked with the file `.paramvalf-root`.
 #'
 #' @export
-this_file <- function() {
-    cmdArgs <- commandArgs(trailingOnly = FALSE)
+get_root_dir <- function() {
+    d <- getwd()
 
-    match <- grep('--interactive', cmdArgs)
-    if (length(match) > 0) {
-        return (paste0(getwd(), '/dummy'))
+    while (!file.exists(paste0(d, '/.paramvalf-root'))) {
+        dd <- dirname(d)
+
+        if (dd == d) {
+            stop('The root directory of the analysis must be marked with the file `.paramvalf-root`. Such a file could not be found on any level of file system from the current working directory upward. Please create this file in the appropriate location.')
+        }
+
+        d <- dd
     }
 
-    match <- grep('rmarkdown::render', cmdArgs)
-    if (length(match) > 0) {
-        return (paste0(getwd(), '/dummy'))
-    }
-
-    needle <- "--file="
-    match <- grep(needle, cmdArgs)
-    if (length(match) > 0) {
-        # Rscript
-        return(normalizePath(sub(needle, "", cmdArgs[match])))
-    } else {
-        # 'source'd via R console
-        return(normalizePath(sys.frames()[[1]]$ofile))
-    }
+    return (d)
 }
 
 #' @export
-make_filename <- function (varname) {
-    dir_path <- dirname(this_file())
-    dir_name <- basename(dir_path)
-    p_dir_path <- dirname(dir_path)
-    p_dir_name <- basename(p_dir_path)
-    pp_dir_path <- dirname(p_dir_path)
-    pp_dir_name <- basename(pp_dir_path)
-
-    root_dirs <- c('paramval', 'vignette')
-
-    if (p_dir_name %in% root_dirs) {
-        cluster <- dir_name
-        path <- sprintf('%s/output/%s/%s.Rdata', pp_dir_path, cluster, varname)
-    } else if (dir_name %in% root_dirs) {
-        path <- sprintf('%s/output/%s.Rdata', p_dir_path, varname)
-    } else {
-        stop('Path could not be properly resolved. Ask Martin.')
-    }
-
-    return (path)
+make_filename <- function (cluster, varname) {
+    sprintf('%s/output/%s/%s.Rdata', get_root_dir(), cluster, varname)
 }
 
 #' @export
-pv_save <- function (x) {
+pv_save <- function (cluster, x) {
     varname <- deparse(substitute(x))
-    filename <- make_filename(varname)
+    filename <- make_filename(cluster, varname)
     save(list = varname, file = filename)
 }
 
 #' @export
-pv_load <- function (x) {
-    filename <- make_filename(deparse(substitute(x)))
+pv_load <- function (cluster, x) {
+    varname <- deparse(substitute(x))
+    filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
     e = parent.frame()
     load(filename, envir = e)

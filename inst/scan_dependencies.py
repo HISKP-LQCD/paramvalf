@@ -108,7 +108,7 @@ def get_templates():
 def process_cluster(cluster, templates):
     # Find the user written files.
     files_paramval = [process_file(filename, cluster) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
-    files_rmd = [process_file(filename, cluster) for filename in glob.glob('vignette/{}/*.Rmd'.format(cluster))]
+    files_rmd = [process_file(filename, cluster) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
 
     dot_rendered = templates['dot'].render(files=present_file_dicts(files_paramval),
                                            rmds=present_file_dicts(files_rmd),

@@ -19,7 +19,7 @@ pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
 pattern_save = re.compile(r'^pv_save\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 
-root_dirs = ['paramval', 'vignette']
+root_dirs = ['paramval', 'vignettes']
 
 source_dir = os.path.dirname(__file__)
 

@@ -21,55 +21,15 @@ pvcall <- function(func, ..., serial = FALSE) {
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        v <- func(param_row, value_row)
-
-        stopifnot(!is.null(v))
-
-        if (!(is.list(v) || is.na(v))) {
-            stop('Return value must be a list, or NA.')
-        }
-
-        return (v)
+        func(param_row, value_row)
     }
 
-    if (exists('debug_mode') && debug_mode || serial) {
-        value <- lapply(1:nrow(joined$param), closure)
-    } else {
-        #value <- pbmcapply::pbmclapply(1:nrow(joined$param), closure)
-        value <- parallel::mclapply(1:nrow(joined$param), closure)
-    }
+    indices <- 1:nrow(joined$param)
 
-    joined$value <- NULL
-    gc()
+    pp <- post_process(indices, closure, serial)
 
-    # The user function is allowed to return `NA` here to signal that the
-    # combination of the parameters is not sensible. We must therefore remove
-    # the row from the parameter data frame and the value list.
-    not_na <- unlist(lapply(value, function (x) !identical(x, NA)))
-
-    # For some reason since 2018-06-11 I see that some elements of `value` are
-    # just `NULL` when running the parallel version with `pbmclapply`. The
-    # assertion in the closure does not seem to suffice in detecting this. This
-    # leads to hard to understand follow-up errors, therefore we also do a
-    # check here to assert that nothing is `NULL`.
-    not_null <- unlist(lapply(value, function (x) !is.null(x)))
-
-    # Sometimes the closure fails to be evaluated and the return value is just
-    # a `try-error` instance. We want to abort if that is the case.
-    if (any(inherits(value, 'try-error'))) {
-        cat('Some of the function calls failed. Here is the return value:\n')
-        print(value)
-        stop()
-    }
-
-    if (!all(not_null)) {
-        cat('Some return values are `NULL`. This might be an issue with `pbmclapply`. In the following, every `FALSE` marks a `NULL` value:\n')
-        print(not_null)
-        stop()
-    }
-
-    list(param = joined$param[not_na, , drop = FALSE],
-         value = value[not_na])
+    list(param = joined$param[pp$not_na, , drop = FALSE],
+         value = pp$value)
 }
 
 #' Converts parameters to values.
@@ -112,35 +72,10 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
         func(pv$param[is, ], list_transpose(pv$value[is]))
     }
 
-    if (exists('debug_mode') && debug_mode || serial) {
-        applied <- lapply(indices, closure)
-    } else {
-        #applied <- pbmcapply::pbmclapply(indices, closure)
-        applied <- parallel::mclapply(indices, closure)
-    }
+    pp <- post_process(indices, closure, serial)
 
-    # The user function is allowed to return `NA` here to signal that the
-    # combination of the parameters is not sensible. We must therefore remove
-    # the row from the parameter data frame and the value list.
-    not_na <- unlist(lapply(applied, function (x) !identical(x, NA)))
-
-    # For some reason since 2018-06-11 I see that some elements of `value` are
-    # just `NULL` when running the parallel version with `pbmclapply`. The
-    # assertion in the closure does not seem to suffice in detecting this. This
-    # leads to hard to understand follow-up errors, therefore we also do a
-    # check here to assert that nothing is `NULL`.
-    not_null <- unlist(lapply(applied, function (x) !is.null(x)))
-
-    # Sometimes the closure fails to be evaluated and the return value is just
-    # a `try-error` instance. We want to abort if that is the case.
-    if (any(inherits(applied, 'try-error'))) {
-        cat('Some of the function calls failed. Here is the return value:\n')
-        print(applied)
-        stop()
-    }
-
-    list(param = grouped[not_na, , drop = FALSE],
-         value = applied[not_na])
+    list(param = grouped[pp$not_na, , drop = FALSE],
+         value = pp$value)
 }
 
 
@@ -163,8 +98,58 @@ pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
     rval <- parameter_to_data(joined, func, param_cols_del, serial)
 
-    rm(joined)
-    gc()
-
     return (rval)
+}
+
+post_process <- function (indices, closure, serial) {
+    if (exists('debug_mode') && debug_mode) {
+        serial <- TRUE
+    }
+
+    if (serial) {
+        applied <- lapply(indices, closure)
+    } else {
+        #value <- pbmcapply::pbmclapply(indices, closure)
+        applied <- parallel::mclapply(indices, closure)
+    }
+
+    # Sometimes the closure fails to be evaluated and the return value is just
+    # a `try-error` instance. We want to abort if that is the case.
+    is_failed <- unlist(lapply(applied, function (x) inherits(x, 'try-error')))
+
+    if (any(is_failed)) {
+        cat('Some of the function calls failed. Here is the return value:\n')
+        print(applied)
+        stop()
+    }
+
+    # The user function is allowed to return `NA` here to signal that the
+    # combination of the parameters is not sensible. We must therefore remove
+    # the row from the parameter data frame and the value list.
+    is_na <- unlist(lapply(applied, function (x) identical(x, NA)))
+
+    # For some reason since 2018-06-11 I see that some elements of `value` are
+    # just `NULL` when running the parallel version with `pbmclapply`. The
+    # assertion in the closure does not seem to suffice in detecting this. This
+    # leads to hard to understand follow-up errors, therefore we also do a
+    # check here to assert that nothing is `NULL`.
+    is_null <- unlist(lapply(applied, function (x) is.null(x)))
+
+    if (!serial && any(is_null)) {
+        cat('Warning: Some return values from parallel processing are NULL. This could be some strange race condition error in mclapply. The following are the indices of the faulty parameter sets:\n')
+        print(which(is_null))
+        applied[is_null] <- lapply(indices[is_null], closure)
+        cat('Warning: The faulty parameter sets will be computed again with a serial lapply.\n')
+    }
+
+    is_null <- unlist(lapply(applied, function (x) is.null(x)))
+
+    if (any(is_null)) {
+        cat('Error: Some return values are `NULL`. The following are the indices of the faulty parameter sets:\n')
+        print(which(is_null))
+        stop('Some return values are `NULL`, even after re-running with a serial lapply.')
+    }
+
+    list(value = applied[!is_na],
+         not_na = !is_na)
 }

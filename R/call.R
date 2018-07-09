@@ -17,14 +17,16 @@
 pvcall <- function(func, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
 
+    indices <- 1:nrow(joined$param)
+
     closure <- function (i) {
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
+        cat('Starting', i, 'of', length(indices), '...\n')
+
         func(param_row, value_row)
     }
-
-    indices <- 1:nrow(joined$param)
 
     pp <- post_process(indices, closure, serial)
 
@@ -104,14 +106,16 @@ pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
 post_process <- function (indices, closure, serial) {
     if (exists('debug_mode') && debug_mode) {
         serial <- TRUE
-        cat('Info: Executing in serial\n')
     } else {
-        cat('Info: Executing concurrently with', getOption('mc.cores'), 'threads.\n')
     }
 
     if (serial) {
+        cat('Info: Executing in serial\n')
+
         applied <- lapply(indices, closure)
     } else {
+        cat('Info: Executing concurrently with', getOption('mc.cores'), 'threads.\n')
+
         #value <- pbmcapply::pbmclapply(indices, closure)
         applied <- parallel::mclapply(indices, closure)
     }

@@ -104,6 +104,9 @@ pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
 post_process <- function (indices, closure, serial) {
     if (exists('debug_mode') && debug_mode) {
         serial <- TRUE
+        cat('Info: Executing in serial\n')
+    } else {
+        cat('Info: Executing concurrently with', getOption('mc.cores'), 'threads.\n')
     }
 
     if (serial) {

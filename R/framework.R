@@ -85,9 +85,7 @@ make_summary <- function(pv) {
         stopifnot(!is.null(s),
                   is.data.frame(s))
 
-
         names_intersection <- dplyr::intersect(names(pv$param), names(s))
-        debug_print(names_intersection)
         if (length(names_intersection) > 0) {
             stop('The summary data frame must not contain any column that has the same name as the param data frame. Columns in question are: ', names_intersection, '. This usually arises because one copies param columns to the summary, but that is done automatically for you!')
         }

@@ -108,12 +108,8 @@ post_process <- function (indices, closure, serial) {
     }
 
     if (serial) {
-        cat('Info: Executing in serial\n')
-
         applied <- lapply(indices, closure)
     } else {
-        cat('Info: Executing concurrently with', getOption('mc.cores'), 'threads.\n')
-
         applied <- pbmcapply::pbmclapply(indices, closure, ignore.interactive = TRUE)
         #applied <- parallel::mclapply(indices, closure)
     }

@@ -132,7 +132,7 @@ def process_cluster(cluster, templates):
 
     for f in files_rmd:
         make.append(dict(
-            dest=['vignette/{}/{}.pdf'.format(cluster, f['barename'])],
+            dest=['vignettes/{}/{}.pdf'.format(cluster, f['barename'])],
             src=[f['filename']] + f['loads'],
             task='Rscript -e "rmarkdown::render(\'{}\')"'.format(f['filename'])))
 

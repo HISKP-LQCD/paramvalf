@@ -23,8 +23,6 @@ pvcall <- function(func, ..., serial = FALSE) {
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        cat('Starting', i, 'of', length(indices), '...\n')
-
         func(param_row, value_row)
     }
 
@@ -116,8 +114,8 @@ post_process <- function (indices, closure, serial) {
     } else {
         cat('Info: Executing concurrently with', getOption('mc.cores'), 'threads.\n')
 
-        #value <- pbmcapply::pbmclapply(indices, closure)
-        applied <- parallel::mclapply(indices, closure)
+        applied <- pbmcapply::pbmclapply(indices, closure, ignore.interactive = TRUE)
+        #applied <- parallel::mclapply(indices, closure)
     }
 
     # Sometimes the closure fails to be evaluated and the return value is just

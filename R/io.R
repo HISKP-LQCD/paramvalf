@@ -29,7 +29,14 @@ make_filename <- function (cluster, varname) {
 pv_save <- function (cluster, x) {
     varname <- deparse(substitute(x))
     filename <- make_filename(cluster, varname)
+
+    cat('Saving', varname, '...')
+
+    start_time <- Sys.time()
     save(list = varname, file = filename)
+    end_time <- Sys.time()
+
+    cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
 }
 
 #' @export
@@ -38,5 +45,12 @@ pv_load <- function (cluster, x) {
     filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
     e = parent.frame()
+
+    cat('Loading', varname, '...')
+
+    start_time <- Sys.time()
     load(filename, envir = e)
+    end_time <- Sys.time()
+
+    cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
 }

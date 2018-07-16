@@ -127,7 +127,7 @@ def process_cluster(cluster, templates):
     make = [dict(dest=f['saves'],
                  src=[f['filename']] + f['loads'],
                  depends=f['depends'],
-                 task='Rscript $<')
+                 task='Rscript -e "options(paramvalf_verbose = TRUE); source(\'$<\')"')
             for f in files_paramval]
 
     for f in files_rmd:

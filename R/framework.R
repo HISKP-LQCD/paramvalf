@@ -121,3 +121,7 @@ list_transpose <- function(ll) {
     names(ll2) <- names(ll[[1]])
     return (ll2)
 }
+
+want_verbose <- function () {
+    interactive() || getOption('paramvalf_verbose', FALSE)
+}

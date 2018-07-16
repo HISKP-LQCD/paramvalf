@@ -110,7 +110,7 @@ post_process <- function (indices, closure, serial) {
     if (serial) {
         applied <- lapply(indices, closure)
     } else {
-        applied <- pbmcapply::pbmclapply(indices, closure, ignore.interactive = TRUE)
+        applied <- pbmcapply::pbmclapply(indices, closure, ignore.interactive = getOption('verbose', FALSE))
         #applied <- parallel::mclapply(indices, closure)
     }
 

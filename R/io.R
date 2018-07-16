@@ -30,7 +30,7 @@ pv_save <- function (cluster, x) {
     varname <- deparse(substitute(x))
     filename <- make_filename(cluster, varname)
 
-    if (interactive()) {
+    if (interactive() || getOption('verbose', FALSE)) {
         cat('Saving', varname, '...')
     }
 
@@ -38,7 +38,7 @@ pv_save <- function (cluster, x) {
     save(list = varname, file = filename)
     end_time <- Sys.time()
 
-    if (interactive()) {
+    if (interactive() || getOption('verbose', FALSE)) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
     }
 }
@@ -50,7 +50,7 @@ pv_load <- function (cluster, x) {
     #cat('Loading from ', filename, '\n', sep = '')
     e = parent.frame()
 
-    if (interactive()) {
+    if (interactive() || getOption('verbose', FALSE)) {
         cat('Loading', varname, '...')
     }
 
@@ -58,7 +58,7 @@ pv_load <- function (cluster, x) {
     load(filename, envir = e)
     end_time <- Sys.time()
 
-    if (interactive()) {
+    if (interactive() || getOption('verbose', FALSE)) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
     }
 }

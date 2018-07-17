@@ -26,8 +26,12 @@ make_filename <- function (cluster, varname) {
 }
 
 #' @export
-pv_save <- function (cluster, x) {
-    varname <- deparse(substitute(x))
+pv_save <- function (cluster, x, name) {
+    if (missing(name)) {
+        varname <- deparse(substitute(x))
+    } else {
+        varname <- name
+    }
     filename <- make_filename(cluster, varname)
 
     if (want_verbose()) {
@@ -75,8 +79,8 @@ pv_load <- function (cluster, x, eager = FALSE) {
 #' it will be returned.
 #'
 #' @export
-lazy_value <- function (sub_value) {
-    path <- sprintf('%s/output/%s.Rdata', get_root_dir(), uuid::UUIDgenerate())
+lazy_value <- function (sub_value, cluster, name, index) {
+    path <- sprintf('%s/output/%s/%s-%d.Rdata', get_root_dir(), cluster, name, index)
     save(sub_value = sub_value, file = path)
 
     self <- list(path = path)
@@ -110,5 +114,5 @@ load_lazy_value.list <- function (self) {
 }
 
 get_lazy_threshold <- function () {
-    getOption('paramvalf_lazy_threshold', 100 * 2^20)
+    getOption('paramvalf_lazy_threshold', 0 * 100 * 2^20)
 }

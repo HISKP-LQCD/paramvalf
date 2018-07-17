@@ -14,7 +14,11 @@
 #'   intermediate PV container.
 #'
 #' @export
-pvcall <- function(func, ..., serial = FALSE) {
+pvcall <- function(cluster, rvar, func, ..., serial = FALSE) {
+    stopifnot(inherits(func, 'function'))
+
+    rvar_name <- deparse(substitute(rvar))
+
     joined <- inner_outer_join(...)
 
     indices <- 1:nrow(joined$param)
@@ -31,7 +35,7 @@ pvcall <- function(func, ..., serial = FALSE) {
 
         if (object.size(result) * length(indices) >= get_lazy_threshold()) {
             result <- lapply(result, function (x) {
-                lazy_value(x)
+                lazy_value(x, cluster, rvar_name, i)
             })
         }
 
@@ -40,8 +44,16 @@ pvcall <- function(func, ..., serial = FALSE) {
 
     pp <- post_process(indices, closure, serial)
 
-    list(param = joined$param[pp$not_na, , drop = FALSE],
-         value = pp$value)
+    result <-
+        list(param = joined$param[pp$not_na, , drop = FALSE],
+             value = pp$value)
+
+    e <- parent.frame()
+
+    e[[rvar_name]] <- result
+    pv_save(cluster, rvar, name = rvar_name)
+
+    invisible(result)
 }
 
 #' Converts parameters to values.

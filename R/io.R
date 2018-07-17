@@ -62,3 +62,30 @@ pv_load <- function (cluster, x) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
     }
 }
+
+#' Create a lazy value
+#'
+#' The given value is stored on disk (using `save`) and a handle for retrieving
+#' it will be returned.
+#'
+#' @export
+lazy_value <- function (sub_value) {
+    path <- sprintf('%s/output/%s.Rdata', get_root_dir(), uuid::UUIDgenerate())
+    save(sub_value = sub_value, file = path)
+
+    rval <- list(path = path)
+    class(rval) <- append(class(rval), 'lazy_value')
+    return (rval)
+}
+
+#' Load a lazy value
+#'
+#' @export
+load.lazy_value <- function (lv) {
+    stopifnot(inherits(lv, 'lazy_value'))
+
+    vars <- load(lv$path)
+    stopifnot(any('sub_value' %in% vars))
+
+    return (sub_value)
+}

@@ -23,7 +23,21 @@ pvcall <- function(func, ..., serial = FALSE) {
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        func(param_row, value_row)
+        value_row <- lapply(value_row, function (x) {
+            if (inherits(x, 'lazy_value')) {
+                return (load.lazy_value(x))
+            } else {
+                return (x)
+            }
+        })
+
+        result <- func(param_row, value_row)
+
+        result <- lapply(result, function (x) {
+            lazy_value(x)
+        })
+
+        return (result)
     }
 
     pp <- post_process(indices, closure, serial)

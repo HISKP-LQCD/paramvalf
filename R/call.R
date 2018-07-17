@@ -14,7 +14,7 @@
 #'   intermediate PV container.
 #'
 #' @export
-pvcall <- function(cluster, rvar, func, ..., serial = FALSE) {
+pv_call <- function(cluster, rvar, func, ..., serial = FALSE) {
     stopifnot(inherits(func, 'function'))
 
     rvar_name <- deparse(substitute(rvar))
@@ -118,7 +118,7 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
 #'
 #' @return A pvcontainer object.
 #' @export
-pvcall_group <- function(func, param_cols_del, ..., serial = FALSE) {
+pv_call_group <- function(func, param_cols_del, ..., serial = FALSE) {
     joined <- inner_outer_join(...)
     rval <- parameter_to_data(joined, func, param_cols_del, serial)
 

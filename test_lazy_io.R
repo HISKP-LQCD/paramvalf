@@ -25,7 +25,7 @@ pv_load('.', pv2)
     list(res = 4:len,
          res2 = value$baz)
 }
-pv3 <- pvcall(.func, pv1, pv2, serial = TRUE)
+pv3 <- pvcall(.func, pv2, matrixfit_model, serial = TRUE)
 pv_save('.', pv3)
 
 debug_print(pv3)

@@ -44,7 +44,7 @@ pv_save <- function (cluster, x) {
 }
 
 #' @export
-pv_load <- function (cluster, x, eager = TRUE) {
+pv_load <- function (cluster, x, eager = FALSE) {
     varname <- deparse(substitute(x))
     filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
@@ -110,5 +110,5 @@ load_lazy_value.list <- function (self) {
 }
 
 get_lazy_threshold <- function () {
-    getOption('paramvalf_lazy_threshold', 0.5 * 2^30)
+    getOption('paramvalf_lazy_threshold', 100 * 2^20)
 }

@@ -9,6 +9,8 @@
 #' @param b PV container
 #'
 #' @return PV container
+#'
+#' @export
 inner_outer_join_impl <- function(a, b) {
     # Extract the parameter sets from the containers.
     ap <- a$param
@@ -72,6 +74,8 @@ inner_outer_join_impl <- function(a, b) {
 #' @param ... Zero or more PV containers
 #'
 #' @return PV container
+#'
+#' @export
 inner_outer_join <- function(a, ...) {
     bs = list(...)
 

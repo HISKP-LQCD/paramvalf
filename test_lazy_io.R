@@ -1,5 +1,7 @@
 devtools::load_all()
 
+options(paramvalf_lazy_threshold = 0)
+
 bootstrap_param <- list(param = data.frame(boot_l = c(1, 2, 4)))
 matrixfit_model <- list(param = data.frame(model = c('shifted', 'weighted')))
 

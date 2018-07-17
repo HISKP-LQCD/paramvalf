@@ -114,5 +114,5 @@ load_lazy_value.list <- function (self) {
 }
 
 get_lazy_threshold <- function () {
-    getOption('paramvalf_lazy_threshold', 0 * 100 * 2^20)
+    getOption('paramvalf_lazy_threshold', 100 * 2^20)
 }

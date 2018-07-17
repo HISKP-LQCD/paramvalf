@@ -24,3 +24,5 @@ pv_load('.', pv2)
 }
 pv3 <- pvcall(.func, pv1, pv2)
 pv_save('.', pv3)
+
+print(sapply(pv3$value, function (x) length(x$res)))

@@ -73,18 +73,21 @@ lazy_value <- function (sub_value) {
     path <- sprintf('%s/output/%s.Rdata', get_root_dir(), uuid::UUIDgenerate())
     save(sub_value = sub_value, file = path)
 
-    rval <- list(path = path)
-    class(rval) <- append(class(rval), 'lazy_value')
-    return (rval)
+
+    self <- list(path = path)
+    class(self) <- append(class(self), 'lazy_value')
+
+    rlang::env_bind_exprs(environment(), lv = { load.lazy_value(self) })
+    return (lv)
 }
 
 #' Load a lazy value
 #'
 #' @export
-load.lazy_value <- function (lv) {
-    stopifnot(inherits(lv, 'lazy_value'))
+load.lazy_value <- function (self) {
+    stopifnot(inherits(self, 'lazy_value'))
 
-    vars <- load(lv$path)
+    vars <- load(self$path)
     stopifnot(any('sub_value' %in% vars))
 
     return (sub_value)

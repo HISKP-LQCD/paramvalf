@@ -63,7 +63,6 @@ pv_load <- function (cluster, x, eager = TRUE) {
         }
     }
 
-
     end_time <- Sys.time()
     if (want_verbose()) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')

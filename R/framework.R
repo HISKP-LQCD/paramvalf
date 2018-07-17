@@ -7,8 +7,7 @@
 #'
 #' @export
 debug_print <- function(expr) {
-    e <- rlang::enquo(expr)
-    name <- deparse(substitute(e))
+    name <- deparse(substitute(expr))
     cat('>>>>', name, '>>>>\n')
     print(expr)
     cat('<<<<', name, '<<<<\n\n')

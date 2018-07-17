@@ -23,13 +23,7 @@ pvcall <- function(func, ..., serial = FALSE) {
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        value_row <- lapply(value_row, function (x) {
-            if (inherits(x, 'lazy_value')) {
-                return (load.lazy_value(x))
-            } else {
-                return (x)
-            }
-        })
+        value_row <- load_lazy_value.list(value_row)
 
         result <- func(param_row, value_row)
 

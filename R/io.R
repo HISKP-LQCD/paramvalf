@@ -44,7 +44,7 @@ pv_save <- function (cluster, x) {
 }
 
 #' @export
-pv_load <- function (cluster, x) {
+pv_load <- function (cluster, x, eval_lazy_values = FALSE) {
     varname <- deparse(substitute(x))
     filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
@@ -53,11 +53,18 @@ pv_load <- function (cluster, x) {
     if (want_verbose()) {
         cat('Loading', varname, '...')
     }
-
     start_time <- Sys.time()
-    load(filename, envir = e)
-    end_time <- Sys.time()
 
+    vars <- load(filename, envir = e)
+
+    if (eval_lazy_values) {
+        for (var in vars) {
+            e[[var]]$value <- lapply(e[[var]]$value, load_lazy_value.list)
+        }
+    }
+
+
+    end_time <- Sys.time()
     if (want_verbose()) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
     }
@@ -75,9 +82,10 @@ lazy_value <- function (sub_value) {
 
     self <- list(path = path)
     class(self) <- append(class(self), 'lazy_value')
+    return (self)
 
-    rlang::env_bind_exprs(environment(), lv = { load.lazy_value(self) })
-    return (lv)
+    #rlang::env_bind_exprs(environment(), lv = { load.lazy_value(self) })
+    #return (lv)
 }
 
 #' Load a lazy value
@@ -90,4 +98,14 @@ load.lazy_value <- function (self) {
     stopifnot(any('sub_value' %in% vars))
 
     return (sub_value)
+}
+
+load_lazy_value.list <- function (self) {
+    lapply(self, function (x) {
+        if (inherits(x, 'lazy_value')) {
+            return (load.lazy_value(x))
+        } else {
+            return (x)
+        }
+    })
 }

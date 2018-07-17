@@ -29,9 +29,11 @@ pvcall <- function(func, ..., serial = FALSE) {
 
         rm(value_loaded)
 
-        result <- lapply(result, function (x) {
-            lazy_value(x)
-        })
+        if (object.size(result) * length(indices) >= get_lazy_threshold()) {
+            result <- lapply(result, function (x) {
+                lazy_value(x)
+            })
+        }
 
         return (result)
     }

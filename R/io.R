@@ -108,3 +108,7 @@ load_lazy_value.list <- function (self) {
         }
     })
 }
+
+get_lazy_threshold <- function () {
+    getOption('paramvalf_lazy_threshold', 0.5 * 2^30)
+}

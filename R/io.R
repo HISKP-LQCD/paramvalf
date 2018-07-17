@@ -44,7 +44,7 @@ pv_save <- function (cluster, x) {
 }
 
 #' @export
-pv_load <- function (cluster, x, eval_lazy_values = FALSE) {
+pv_load <- function (cluster, x, eager = TRUE) {
     varname <- deparse(substitute(x))
     filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
@@ -57,7 +57,7 @@ pv_load <- function (cluster, x, eval_lazy_values = FALSE) {
 
     vars <- load(filename, envir = e)
 
-    if (eval_lazy_values) {
+    if (eager) {
         for (var in vars) {
             e[[var]]$value <- lapply(e[[var]]$value, load_lazy_value.list)
         }

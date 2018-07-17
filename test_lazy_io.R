@@ -32,7 +32,7 @@ debug_print(pv3)
 
 rm(pv3)
 
-pv_load('.', pv3, eval_lazy_values = TRUE)
+pv_load('.', pv3, eager = TRUE)
 
 debug_print(sapply(pv3$value, function (x) length(x$res)))
 debug_print(sapply(pv3$value, function (x) length(x$res2)))

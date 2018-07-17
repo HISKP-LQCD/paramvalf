@@ -73,7 +73,6 @@ lazy_value <- function (sub_value) {
     path <- sprintf('%s/output/%s.Rdata', get_root_dir(), uuid::UUIDgenerate())
     save(sub_value = sub_value, file = path)
 
-
     self <- list(path = path)
     class(self) <- append(class(self), 'lazy_value')
 

@@ -16,10 +16,11 @@ pv_save('.', pv1)
 pv2 <- pvcall(.func, bootstrap_param)
 pv_save('.', pv2)
 
+pv_load('.', pv1)
+pv_load('.', pv2)
+
 .func <- function (param, value) {
-    list(res = value$foo + value$baz)
+    list(res = 1:(1 * 2^20))
 }
 pv3 <- pvcall(.func, pv1, pv2)
 pv_save('.', pv3)
-
-print(pv3)

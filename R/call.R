@@ -123,14 +123,7 @@ post_process <- function (indices, closure, serial) {
     }
 
     if (serial) {
-        if (exists('debug_mode') && debug_mode) {
-            applied <- lapply(indices, closure)
-        } else {
-            applied <- pbmcapply::pbmclapply(indices,
-                                             closure,
-                                             ignore.interactive = want_verbose(),
-                                             mc.cores = 1)
-        }
+        applied <- lapply(indices, closure)
     } else {
         applied <- pbmcapply::pbmclapply(indices,
                                          closure,

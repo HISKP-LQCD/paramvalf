@@ -9,17 +9,25 @@
 #' @param ... One or more PV containers
 #' @param serial Do not use `mclapply` but a plain `for`-loop. This is useful
 #'   if one wants to create a plot within the function `func`.
+#' @param convert Character vector containing the names of the parameter
+#'   colums that are to be converted into values. The parameter data frame that
+#'   is created after the inner-outer-join will be grouped by all columns except
+#'   the ones listed here.
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
 #'
 #' @export
-pv_call <- function(cluster, rvar, func, ..., serial = FALSE) {
+pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c()) {
     stopifnot(inherits(func, 'function'))
 
     rvar_name <- deparse(substitute(rvar))
 
     joined <- inner_outer_join(...)
+
+    if (length(convert) > 0) {
+        joined <- parameter_to_data(joined, convert)
+    }
 
     indices <- 1:nrow(joined$param)
 
@@ -48,6 +56,10 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE) {
         list(param = joined$param[pp$not_na, , drop = FALSE],
              value = pp$value)
 
+    if (length(names(result$value[[1]])) == 1 && names(result$value[[1]]) == c('summary')) {
+        result <- make_summary(result)
+    }
+
     e <- parent.frame()
 
     e[[rvar_name]] <- result
@@ -74,8 +86,7 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE) {
 #' @return Another container
 #'
 #' @import dplyr
-parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
-
+parameter_to_data <- function (pv, param_cols_del) {
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
     param_cols_keep <- setdiff(param_cols_all, param_cols_del)
@@ -91,38 +102,14 @@ parameter_to_data <- function(pv, func, param_cols_del, serial = FALSE) {
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
-    closure <- function (is) {
+    new_param <- grouped
+    new_value <- lapply(indices, function (is) {
         is <- unlist(is)
-        func(pv$param[is, ], list_transpose(pv$value[is]))
-    }
+        list_transpose(pv$value[is])
+    })
 
-    pp <- post_process(indices, closure, serial)
-
-    list(param = grouped[pp$not_na, , drop = FALSE],
-         value = pp$value)
-}
-
-
-#' Converts parameters to data and then does the same as pvcall.
-#'
-#' @param func A function which expects \code{param} and \code{value} as
-#'   parameters. These are lists with the names of from the \code{...} parameter
-#'   here. Each element contains a list with the number of elements that have
-#'   the same set of parameters after the grouping by \code{param_cols_del}.
-#' @param param_cols_del Character vector containing the names of the parameter
-#'   colums that are to be converted into values. The parameter data frame that
-#'   is created after the inner-outer-join will be grouped by all columns except
-#'   the ones listed here.
-#' @param ... One or more pvcontainer objects.
-#' @param serial If true, execution will be distributed onto multiple cores.
-#'
-#' @return A pvcontainer object.
-#' @export
-pv_call_group <- function(func, param_cols_del, ..., serial = FALSE) {
-    joined <- inner_outer_join(...)
-    rval <- parameter_to_data(joined, func, param_cols_del, serial)
-
-    return (rval)
+    list(param = new_param,
+         value = new_value)
 }
 
 post_process <- function (indices, closure, serial) {

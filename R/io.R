@@ -79,8 +79,8 @@ pv_load <- function (cluster, x, eager = FALSE) {
 #' it will be returned.
 #'
 #' @export
-lazy_value <- function (sub_value, cluster, name, index) {
-    path <- sprintf('%s/output/%s/%s-%d.Rdata', get_root_dir(), cluster, name, index)
+lazy_value <- function (sub_value, cluster, name, index, value_name) {
+    path <- sprintf('%s/output/%s/%s-%d-%s.Rdata', get_root_dir(), cluster, name, index, value_name)
     save(sub_value = sub_value, file = path)
 
     self <- list(path = path)

@@ -18,7 +18,7 @@
 #'   intermediate PV container.
 #'
 #' @export
-pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c()) {
+pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), store = TRUE) {
     stopifnot(inherits(func, 'function'))
 
     rvar_name <- deparse(substitute(rvar))
@@ -41,10 +41,12 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c()) {
 
         rm(value_loaded)
 
-        if (object.size(result) * length(indices) >= get_lazy_threshold()) {
-            result <- lapply(result, function (x) {
-                lazy_value(x, cluster, rvar_name, i)
-            })
+        if (store &&
+            object.size(result) * length(indices) >= get_lazy_threshold() &&
+            !(length(names(result)) == 1 && names(result) == c('summary'))) {
+            for (name in names(result)) {
+                result[[name]] <- lazy_value(result[[name]], cluster, rvar_name, i, name)
+            }
         }
 
         return (result)
@@ -61,9 +63,11 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c()) {
     }
 
     e <- parent.frame()
-
     e[[rvar_name]] <- result
-    pv_save(cluster, rvar, name = rvar_name)
+
+    if (store) {
+        pv_save(cluster, rvar, name = rvar_name)
+    }
 
     invisible(result)
 }

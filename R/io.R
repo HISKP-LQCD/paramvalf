@@ -120,7 +120,9 @@ get_lazy_threshold <- function () {
     getOption('paramvalf_lazy_threshold', 1000 * 2^20)
 }
 
-delete_rdata_directory <- function (cluster, variable) {
+delete_rdata_directory <- function (cluster, name) {
     path <- sprintf('%s/output/%s/%s.Rdata.dir', get_root_dir(), cluster, name)
-    stopifnot(unlink(path, recursive = TRUE) == 0)
+    if (dir.exists(path)) {
+        stopifnot(unlink(path, recursive = TRUE) == 0)
+    }
 }

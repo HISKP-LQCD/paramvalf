@@ -11,13 +11,13 @@ len <- 100
     list(foo = 1:len,
          bar = 2:len)
 }
-pvcall('.', pv1, .func, bootstrap_param, matrixfit_model)
+pv_call('.', pv1, .func, bootstrap_param, matrixfit_model)
 #pv_save('.', pv1)
 
 .func <- function (param, value) {
     list(baz = 3:len)
 }
-pvcall('.', pv2, .func, bootstrap_param)
+pv_call('.', pv2, .func, bootstrap_param)
 #pv_save('.', pv2)
 
 pv_load('.', pv1)
@@ -27,7 +27,7 @@ pv_load('.', pv2)
     list(res = 4:len,
          res2 = value$baz)
 }
-pvcall('.', pv3, .func, pv2, matrixfit_model, serial = TRUE)
+pv_call('.', pv3, .func, pv2, matrixfit_model, serial = TRUE)
 #pv_save('.', pv3)
 
 #debug_print(pv3)

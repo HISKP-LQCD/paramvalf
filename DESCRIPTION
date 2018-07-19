@@ -14,8 +14,7 @@ LazyData: true
 Imports:
     dplyr,
     parallel,
-    pbmcapply,
-    uuid
+    pbmcapply
 RoxygenNote: 6.0.1
 Suggests:
     testthat,

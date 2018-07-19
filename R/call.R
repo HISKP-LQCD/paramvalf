@@ -52,6 +52,8 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), sto
         return (result)
     }
 
+    delete_rdata_directory(cluster, rvar_name)
+
     pp <- post_process(indices, closure, serial)
 
     result <-

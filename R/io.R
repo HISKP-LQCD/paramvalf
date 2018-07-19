@@ -80,7 +80,10 @@ pv_load <- function (cluster, x, eager = FALSE) {
 #'
 #' @export
 lazy_value <- function (sub_value, cluster, name, index, value_name) {
-    path <- sprintf('%s/output/%s/%s-%d-%s.Rdata', get_root_dir(), cluster, name, index, value_name)
+    path <- sprintf('%s/output/%s/%s.Rdata.dir/%d-%s.Rdata', get_root_dir(), cluster, name, index, value_name)
+    if (!dir.exists(dirname(path))) {
+        stopifnot(dir.create(dirname(path)))
+    }
     save(sub_value = sub_value, file = path)
 
     self <- list(path = path)
@@ -114,5 +117,10 @@ load_lazy_value.list <- function (self) {
 }
 
 get_lazy_threshold <- function () {
-    getOption('paramvalf_lazy_threshold', 100 * 2^20)
+    getOption('paramvalf_lazy_threshold', 1000 * 2^20)
+}
+
+delete_rdata_directory <- function (cluster, variable) {
+    path <- sprintf('%s/output/%s/%s.Rdata.dir', get_root_dir(), cluster, name)
+    stopifnot(unlink(path, recursive = TRUE) == 0)
 }

@@ -110,17 +110,50 @@ parameter_to_data <- function (pv, param_cols_del) {
     # the `value` later on.
     pv$param$.idx <- 1:nrow(pv$param)
 
+    # Group the data by the columns that are kept and attach a list of
+    # corresponding row indices.
     grouped <- pv$param %>%
         group_by_at(param_cols_keep) %>%
         summarize(.indices = list(.idx))
 
+    # We do not want to carry the indices in the `grouped` thing to the return
+    # value, therefore we extract it here and delete it from the tibble.
     indices <- grouped$.indices
     grouped$.indices <- NULL
 
+    # The new parameters are just the grouped parameters.
     new_param <- grouped
+
+    # For the value we need to extract the corresponding values to each index
+    # set for each group of the parameters.
     new_value <- lapply(indices, function (is) {
+        # The indices were stored as a list to make it the payload of a tibble,
+        # but we know that it is just an integer vector, therefore unpack it.
         is <- unlist(is)
-        c(list_transpose(pv$value[is]), do.call(c, lapply(param_cols_del, function (col) { l <- list(); l[[col]] <- pv$param[is, col]; l})))
+
+        # The new values from the old values are just ones corresponding to the
+        # current index set. In order to provide the user with names again, we
+        # need to transpose the selection of value lists.
+        value_value <- list_transpose(pv$value[is])
+
+        # From the parameters we need to extract the columns that shall be
+        # converted into values. The `value` shall be a named list, therefore
+        # we create a bunch of these named lists.
+        cols_as_list <- lapply(
+            param_cols_del,
+            function (col) {
+                l <- list()
+                l[[col]] <- pv$param[is, col]
+                return (l)
+            }
+        )
+
+        # This bunch of named lists gets merged into a single larger named
+        # list.
+        param_value <- do.call(c, cols_as_list)
+
+        # Both parts make up the value, so we return the merge of them.
+        c(value_value, param_value)
     })
 
     list(param = new_param,

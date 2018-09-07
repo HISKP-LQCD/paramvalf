@@ -18,7 +18,7 @@
 #'   intermediate PV container.
 #'
 #' @export
-pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), store = TRUE) {
+pv_call <- function(func, ..., serial = FALSE, convert = c()) {
     stopifnot(inherits(func, 'function'))
 
     rvar_name <- deparse(substitute(rvar))
@@ -35,24 +35,10 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), sto
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        value_loaded <- load_lazy_value.list(value_row)
-
-        result <- func(param_row, value_loaded)
-
-        rm(value_loaded)
-
-        if (store &&
-            object.size(result) * length(indices) >= get_lazy_threshold() &&
-            !(length(names(result)) == 1 && names(result) == c('summary'))) {
-            for (name in names(result)) {
-                result[[name]] <- lazy_value(result[[name]], cluster, rvar_name, i, name)
-            }
-        }
+        result <- func(param_row, value_row)
 
         return (result)
     }
-
-    delete_rdata_directory(cluster, rvar_name)
 
     pp <- post_process(indices, closure, serial)
 
@@ -66,10 +52,6 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), sto
 
     e <- parent.frame()
     e[[rvar_name]] <- result
-
-    if (store) {
-        pv_save(cluster, rvar, name = rvar_name)
-    }
 
     invisible(result)
 }

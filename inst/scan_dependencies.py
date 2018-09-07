@@ -17,7 +17,7 @@ import jinja2
 
 pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
-pattern_save = re.compile(r'^(?:pv_save|pv_call)\([\'"]([^\'"]+)[\'"], ([^(),]+)[,)]', re.M)
+pattern_save = re.compile(r'^(?:pv_save)\([\'"]([^\'"]+)[\'"], ([^(),]+)[,)]', re.M)
 
 root_dirs = ['paramval', 'vignettes']
 

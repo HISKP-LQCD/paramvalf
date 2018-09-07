@@ -61,68 +61,8 @@ pv_load <- function (cluster, x, eager = FALSE) {
 
     vars <- load(filename, envir = e)
 
-    if (eager) {
-        for (var in vars) {
-            e[[var]]$value <- lapply(e[[var]]$value, load_lazy_value.list)
-        }
-    }
-
     end_time <- Sys.time()
     if (want_verbose()) {
         cat(' took', sprintf('%.2f', end_time - start_time), 'seconds.\n')
-    }
-}
-
-#' Create a lazy value
-#'
-#' The given value is stored on disk (using `save`) and a handle for retrieving
-#' it will be returned.
-#'
-#' @export
-lazy_value <- function (sub_value, cluster, name, index, value_name) {
-    path <- sprintf('%s/output/%s/%s.Rdata.dir/%d-%s.Rdata', get_root_dir(), cluster, name, index, value_name)
-    if (!dir.exists(dirname(path))) {
-        stopifnot(dir.create(dirname(path)))
-    }
-    save(sub_value = sub_value, file = path)
-
-    self <- list(path = path)
-    class(self) <- append(class(self), 'lazy_value')
-    return (self)
-
-    #rlang::env_bind_exprs(environment(), lv = { load.lazy_value(self) })
-    #return (lv)
-}
-
-#' Load a lazy value
-#'
-#' @export
-load.lazy_value <- function (self) {
-    stopifnot(inherits(self, 'lazy_value'))
-
-    vars <- load(self$path)
-    stopifnot(any('sub_value' %in% vars))
-
-    return (sub_value)
-}
-
-load_lazy_value.list <- function (self) {
-    lapply(self, function (x) {
-        if (inherits(x, 'lazy_value')) {
-            return (load.lazy_value(x))
-        } else {
-            return (x)
-        }
-    })
-}
-
-get_lazy_threshold <- function () {
-    getOption('paramvalf_lazy_threshold', 1000 * 2^20)
-}
-
-delete_rdata_directory <- function (cluster, name) {
-    path <- sprintf('%s/output/%s/%s.Rdata.dir', get_root_dir(), cluster, name)
-    if (dir.exists(path)) {
-        stopifnot(unlink(path, recursive = TRUE) == 0)
     }
 }

@@ -91,7 +91,16 @@ pv_call <- function(cluster, rvar, func, ..., serial = FALSE, convert = c(), sto
 #'   data frame that are to be converted into `value` columns
 #' @return Another container
 #'
+#' @export
 #' @import dplyr
+#'
+#' @examples
+#' pv <- list(param = data.frame(a = c(1, 1), b = 3:4),
+#'            value = list(list(c = 1), list(c = 2)))
+#' print(pv)
+#'
+#' pv2 <- parameter_to_data(pv, c('b'))
+#' print(pv2)
 parameter_to_data <- function (pv, param_cols_del) {
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
@@ -111,7 +120,7 @@ parameter_to_data <- function (pv, param_cols_del) {
     new_param <- grouped
     new_value <- lapply(indices, function (is) {
         is <- unlist(is)
-        list_transpose(pv$value[is])
+        c(list_transpose(pv$value[is]), do.call(c, lapply(param_cols_del, function (col) { l <- list(); l[[col]] <- pv$param[is, col]; l})))
     })
 
     list(param = new_param,

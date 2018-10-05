@@ -122,7 +122,7 @@ def process_cluster(cluster, templates):
 
     with open(dot_path, 'w') as f:
         f.write(dot_rendered)
-    subprocess.check_call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
+    subprocess.call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
 
     make = [dict(dest=f['saves'],
                  src=[f['filename']] + f['loads'],

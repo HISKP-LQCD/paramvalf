@@ -153,7 +153,8 @@ post_process <- function (indices, closure, serial) {
     } else {
         applied <- pbmcapply::pbmclapply(indices,
                                          closure,
-                                         ignore.interactive = want_verbose())
+                                         ignore.interactive = want_verbose(),
+                                         mc.preschedule = FALSE)
         #applied <- parallel::mclapply(indices, closure)
     }
 

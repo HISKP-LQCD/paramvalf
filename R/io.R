@@ -34,7 +34,7 @@ pv_save <- function (cluster, x, name, write_unchanged = TRUE) {
     }
     filename <- make_filename(cluster, varname)
 
-    if (!write_unchanged) {
+    if (file.exists(filename) && !write_unchanged) {
         # The user has requested us to only write then something has changed,
         # so we first load the old value. The problem is that this might shadow
         # a local variable here if we just use `pv_load`. Therefore we load

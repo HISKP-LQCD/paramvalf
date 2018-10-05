@@ -26,13 +26,35 @@ make_filename <- function (cluster, varname) {
 }
 
 #' @export
-pv_save <- function (cluster, x, name) {
+pv_save <- function (cluster, x, name, write_unchanged = TRUE) {
     if (missing(name)) {
         varname <- deparse(substitute(x))
     } else {
         varname <- name
     }
     filename <- make_filename(cluster, varname)
+
+    if (!write_unchanged) {
+        # The user has requested us to only write then something has changed,
+        # so we first load the old value. The problem is that this might shadow
+        # a local variable here if we just use `pv_load`. Therefore we load
+        # into a fresh environment and extract the value.
+        env <- new.env()
+        pv_load(cluster, name = varname, envir = env)
+
+        # We expect only a single variable to be loaded.
+        n <- names(env)
+        stopifnot(length(n) == 1)
+
+        old_value <- env[[n[[1]]]]
+
+        # In case the old and new value are the same, we can just quit here and
+        # need no further work.
+        if (identical(x, old_value)) {
+            cat(sprintf('No changes have been made to %s, not overwriting.\n', varname))
+            return ()
+        }
+    }
 
     if (want_verbose()) {
         cat('Saving', varname, '...')
@@ -48,18 +70,25 @@ pv_save <- function (cluster, x, name) {
 }
 
 #' @export
-pv_load <- function (cluster, x, eager = FALSE) {
-    varname <- deparse(substitute(x))
+pv_load <- function (cluster, x, name, envir = NULL) {
+    if (missing(name)) {
+        varname <- deparse(substitute(x))
+    } else {
+        varname <- name
+    }
     filename <- make_filename(cluster, varname)
     #cat('Loading from ', filename, '\n', sep = '')
-    e = parent.frame()
+
+    if (is.null(envir)) {
+        envir = parent.frame()
+    }
 
     if (want_verbose()) {
         cat('Loading', varname, '...')
     }
     start_time <- Sys.time()
 
-    vars <- load(filename, envir = e)
+    vars <- load(filename, envir = envir)
 
     end_time <- Sys.time()
     if (want_verbose()) {

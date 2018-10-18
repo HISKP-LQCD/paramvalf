@@ -13,12 +13,15 @@
 #'   colums that are to be converted into values. The parameter data frame that
 #'   is created after the inner-outer-join will be grouped by all columns except
 #'   the ones listed here.
+#' @param dynamic_scheduling Logical, if true the each work packet will be
+#'   assigned to a newly forked process. This provides best load balancing with
+#'   a high cost of overhead. Should only be used for expensive tasks.
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
 #'
 #' @export
-pv_call <- function(func, ..., serial = FALSE, convert = c()) {
+pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling = FALSE) {
     stopifnot(inherits(func, 'function'))
 
     rvar_name <- deparse(substitute(rvar))
@@ -40,7 +43,7 @@ pv_call <- function(func, ..., serial = FALSE, convert = c()) {
         return (result)
     }
 
-    pp <- post_process(indices, closure, serial)
+    pp <- post_process(indices, closure, serial, dynamic_scheduling)
 
     result <-
         list(param = joined$param[pp$not_na, , drop = FALSE],
@@ -142,7 +145,7 @@ parameter_to_data <- function (pv, param_cols_del) {
          value = new_value)
 }
 
-post_process <- function (indices, closure, serial) {
+post_process <- function (indices, closure, serial, dynamic_scheduling) {
     if (exists('debug_mode') && debug_mode) {
         serial <- TRUE
     } else {
@@ -155,7 +158,7 @@ post_process <- function (indices, closure, serial) {
                                          closure,
                                          mc.cores = parallel::detectCores(),
                                          ignore.interactive = want_verbose(),
-                                         mc.preschedule = FALSE)
+                                         mc.preschedule = !dynamic_scheduling)
         #applied <- parallel::mclapply(indices, closure)
     }
 

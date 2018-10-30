@@ -12,8 +12,8 @@ import pprint
 import re
 import subprocess
 
-import yaml
 import jinja2
+import yaml
 
 pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)

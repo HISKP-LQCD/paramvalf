@@ -43,7 +43,7 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
         return (result)
     }
 
-    pp <- post_process(indices, closure, serial, dynamic_scheduling)
+    pp <- post_process(indices, closure, serial, dynamic_scheduling, joined)
 
     result <-
         list(param = joined$param[pp$not_na, , drop = FALSE],
@@ -145,7 +145,7 @@ parameter_to_data <- function (pv, param_cols_del) {
          value = new_value)
 }
 
-post_process <- function (indices, closure, serial, dynamic_scheduling) {
+post_process <- function (indices, closure, serial, dynamic_scheduling, joined) {
     if (exists('debug_mode') && debug_mode) {
         serial <- TRUE
     } else {
@@ -167,8 +167,15 @@ post_process <- function (indices, closure, serial, dynamic_scheduling) {
     is_failed <- unlist(lapply(applied, function (x) inherits(x, 'try-error')))
 
     if (any(is_failed)) {
-        cat('Some of the function calls failed. Here is the return value:\n')
-        print(applied)
+        cat('\nSome of the function calls failed. The following parameter row indices are problematic:\n')
+        print(which(is_failed))
+        cat('These correspond to the following parameters:\n')
+        print(joined$param[is_failed, ])
+
+        cat('The joined paramval object has been written to `paramval_joined` and the return value has been written to the variable `paramval_applied` in the global scope.\n')
+        paramval_is_failed <<- is_failed
+        paramval_joined <<- joined
+        paramval_applied <<- applied
         stop()
     }
 

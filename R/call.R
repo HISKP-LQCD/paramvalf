@@ -24,6 +24,10 @@
 pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling = FALSE) {
     stopifnot(inherits(func, 'function'))
 
+    if (exists('paramval_rval')) {
+        rm(paramval_rval, inherit = TRUE)
+    }
+
     rvar_name <- deparse(substitute(rvar))
 
     joined <- inner_outer_join(...)
@@ -172,10 +176,10 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
         cat('These correspond to the following parameters:\n')
         print(joined$param[is_failed, ])
 
-        cat('The joined paramval object has been written to `paramval_joined` and the return value has been written to the variable `paramval_applied` in the global scope.\n')
-        paramval_is_failed <<- is_failed
-        paramval_joined <<- joined
-        paramval_applied <<- applied
+        cat('The joined paramval object, the return value and the failure vector have been written to the variable `paramval_rval` in the global scope.\n')
+        paramval_rval <<- list(is_failed = is_failed,
+                               joined = joined
+                               applied = applied)
         stop()
     }
 

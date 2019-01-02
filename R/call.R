@@ -163,11 +163,23 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
                                          mc.cores = parallel::detectCores(),
                                          ignore.interactive = want_verbose(),
                                          mc.preschedule = !dynamic_scheduling)
-        #applied <- parallel::mclapply(indices, closure)
     }
 
     # Sometimes the closure fails to be evaluated and the return value is just
     # a `try-error` instance. We want to abort if that is the case.
+    is_failed <- unlist(lapply(applied, function (x) inherits(x, 'try-error')))
+
+    if (!serial && !dynamic_scheduling && any(is_failed)) {
+        cat('\nSome of the function calls failed in the parallel evaluation without dynamic scheduling. There is a known side effect in parallel::mclapply which causes all or most other values from that process to have failed as well. We now re-do them with dynamic scheduling.\n')
+        cat('We have to redo', sum(is_failed), 'of', length(is_failed), 'calls.\n')
+        applied[is_failed] <- pbmcapply::pbmclapply(
+            indices[is_failed],
+            closure,
+            mc.cores = parallel::detectCores(),
+            ignore.interactive = want_verbose(),
+            mc.preschedule = FALSE)
+    }
+
     is_failed <- unlist(lapply(applied, function (x) inherits(x, 'try-error')))
 
     if (any(is_failed)) {

@@ -25,7 +25,7 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
     stopifnot(inherits(func, 'function'))
 
     if (exists('paramval_rval')) {
-        rm(paramval_rval, inherit = TRUE)
+        paramval_rval <<- NULL
     }
 
     rvar_name <- deparse(substitute(rvar))

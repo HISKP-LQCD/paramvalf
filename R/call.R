@@ -174,7 +174,7 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
         cat('\nSome of the function calls failed. The following parameter row indices are problematic:\n')
         print(which(is_failed))
         cat('These correspond to the following parameters:\n')
-        print(joined$param[is_failed, ])
+        print(joined$param[is_failed, , drop = FALSE])
 
         cat('The joined paramval object, the return value and the failure vector have been written to the variable `paramval_rval` in the global scope.\n')
         paramval_rval <<- list(is_failed = is_failed,

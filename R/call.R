@@ -178,7 +178,7 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
 
         cat('The joined paramval object, the return value and the failure vector have been written to the variable `paramval_rval` in the global scope.\n')
         paramval_rval <<- list(is_failed = is_failed,
-                               joined = joined
+                               joined = joined,
                                applied = applied)
         stop()
     }

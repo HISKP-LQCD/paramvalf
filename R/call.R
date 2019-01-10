@@ -49,6 +49,10 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
 
     pp <- post_process(indices, closure, serial, dynamic_scheduling, joined)
 
+    if (length(pp$value) == 0) {
+        stop('There are no results. This could be because every single function call returned `NA` and was therefore discarded.')
+    }
+
     result <-
         list(param = joined$param[pp$not_na, , drop = FALSE],
              value = pp$value)

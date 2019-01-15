@@ -98,11 +98,13 @@ We can now perform the fit with both models and both ranges:
 fit_pv <- pv_call(.func, corr_boot_pv, ranges_pv)
 ```
 
-This function will be called four times because the `corr_boot_pv` and the `ranges_pv` have no common parameters and therefore we get the outer product of the parameters. We see these four combinations in the `param` section of `fit_pv`. We also see that we have four fit objects at `fit`.
+This function will be called four times because the `corr_boot_pv` and the `ranges_pv` have no common parameters and therefore we get the outer product of the parameters. We see these four combinations in the `param` section of `fit_pv`. We also see that we have four fit objects at `fit`. This way we have some values and all the parameters that are associated with them.
 
 ```{r}
 str(fit_pv, max.level = 3)
 ```
+
+When passing multiple pv containers to `pv_call`, they will get combined such that there is an inner product on all common parameters and an outer product on all the other paramaters. Values are referenced such that for each parameter combination we have the corresponding values available from all containers. If two containers each contain a value with the same name it will cause problems.
 
 We can now generate a plot for each of the fits:
 

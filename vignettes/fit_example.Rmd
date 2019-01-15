@@ -1,0 +1,165 @@
+---
+title: "Fit Example"
+author: "Martin Ueding"
+date: "15 Januar 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+In this vignette we want to do a fit to a correlation function with different models and different fit ranges and compare the results. We use the `hadron` library and the provided `samplecf`. This vignette assumes that you are familiar with the `hadron` library.
+
+```{r}
+library(ggplot2)
+library(hadron)
+library(paramvalf)
+```
+
+Let's try the normal and the shifted model. For this we do two variants: (a) take the `samplecf` as is and use the `single` fit model and (b) apply `takeTimeDiff.cf` and use the `shifted` model. So we introduce a pure-parameter *pv container*:
+
+```{r}
+model_pv <- list(param = data.frame(model = c('single', 'shifted'), stringsAsFactors = FALSE))
+```
+
+I normally would also call the variable `model` because it just provides a single parameter column named `model`, but to make it easier to distinguish I affix the containers with `_pv` in this document. One can use completely different names if desired. The contents are straightforward:
+
+```{r}
+str(model_pv)
+```
+
+We prepare the data by looping over all our parameters, which there are only two of at this point.
+
+```{r}
+.func <- function (param, value) {
+    if (param$model == 'single') {
+        prepared <- samplecf
+    } else if (param$model == 'shifted') {
+        prepared <- takeTimeDiff.cf(samplecf)
+    } else {
+        stop('Given model is not supported.')
+    }
+    
+    corr_boot <- bootstrap.cf(prepared)
+    
+    list(corr_boot = corr_boot)
+}
+corr_boot_pv <- pv_call(.func, model_pv)
+```
+
+`pv_call` applies the given function to each row of the parameter data frame. There are no values attached, so in the above function the parameter `value` will be just `NULL`. We can access the `model` parameter via `param`, which is a one-row data frame. To see exactly what `param` and `value` correspond to, we just let it print this.
+
+```{r}
+.func <- function (param, value) {
+    cat('Begin of .func\nparam:\n')
+    str(param)
+    cat('\nvalue:\n')
+    str(value)
+    cat('End of .func\n\n')
+    
+    list()
+}
+result_pv <- pv_call(.func, model_pv, serial = TRUE)
+```
+
+We see the two invocations and that we get one row of the `param` data frame in each call. Don't worry about the `serial` at this point.
+
+What is the content of `corr_boot_pv`?
+
+```{r}
+str(corr_boot_pv, max.level = 4)
+```
+
+You can see that there are two parameter combinations available in this container. There is one parameter, namely `model`. This container now also has a `value` field which is a numbered list which has as many elements as the `param` data frame has rows. Each list element corresponds to one row of the data frame. Each `value` list element is a named list where the name `corr` is the one that we have chosen as the list element name in our function above. We can return arbitrary many values and they will just be added to this list.
+
+From here we want to do the fit, but we also want to try different fit ranges. We prepare a pv container with the fit ranges:
+
+```{r}
+ranges_pv <- list(param = data.frame(tmin = c(14, 12), tmax = c(20, 24)))
+```
+
+We can now perform the fit with both models and both ranges:
+
+```{r}
+.func <- function (param, value) {
+    fit <- matrixfit(
+        cf = value$corr,
+        t1 = param$tmin,
+        t2 = param$tmax,
+        model = param$model)
+    
+    list(fit = fit)
+}
+fit_pv <- pv_call(.func, corr_boot_pv, ranges_pv)
+```
+
+This function will be called four times because the `corr_boot_pv` and the `ranges_pv` have no common parameters and therefore we get the outer product of the parameters. We see these four combinations in the `param` section of `fit_pv`. We also see that we have four fit objects at `fit`.
+
+```{r}
+str(fit_pv, max.level = 3)
+```
+
+We can now generate a plot for each of the fits:
+
+```{r}
+.func <- function (param, value) {
+    plot(value$fit,
+         main = sprintf('Fit with %s model from %d to %d',
+                        param$model,
+                        param$tmin,
+                        param$tmax),
+         do.qqplot = FALSE)
+    
+    list()
+}
+pv_call(.func, fit_pv, serial = TRUE)
+```
+
+I have used `serial` again, so I better explain what it does. As `pv_call` applies a function to each of the parameter sets and they are independent of each other, it can do so concurrently. This way you get data parallelism for free, but you need to have more parameter sets than cores for this to really make a difference. The downside is that IO from the subprocesses does not get through properly, so when you want to use `print` or `plot`, one has to force serial evaluation with that parameter. If you want to disable parallel evaluation for your whole session just define `debug_mode <- TRUE` and everything will be in serial mode only.
+
+The four plots are nice, but we would like to compare the results now. For this we create a *summary* like this:
+
+```{r}
+.func <- function (param, value) {
+    s <- data.frame(
+        mass_val = value$fit$t0[1],
+        mass_err = value$fit$se[1],
+        chi_sq_dof = sprintf('%.1f/%d', value$fit$chisqr, value$fit$dof))
+    
+    list(summary = s)
+}
+fit_summary <- pv_call(.func, fit_pv)
+```
+
+The return value of this function is a list with just one element named `summary`. This tells `pv_call` that we want to make a summary data frame. It will cbind (“join” in SQL terms) the matching parameters to the returned data frame. All the data frames from each function call (4 in our case) will be joined with rbind. We then obtain the following:
+
+```{r}
+knitr::kable(fit_summary)
+```
+
+This is the long data format and we can just throw it into ggplot:
+
+```{r}
+ggplot(fit_summary,
+       aes(x = factor(model),
+           y = mass_val,
+           color = interaction(tmin, tmax, sep = ' to '))) +
+    geom_errorbar(aes(ymin = mass_val - mass_err,
+                      ymax = mass_val + mass_err),
+                  width = 0.3,
+                  position = position_dodge(width = 0.5)) +
+    geom_label(aes(label = chi_sq_dof),
+               position = position_dodge(width = 0.5)) +
+    labs(title = 'Fit result comparison',
+         x = 'Model',
+         y = expression(a ~ M),
+         color = 'Range') +
+    theme_light()
+```
+
+Here we can nicely compare the two models and the two fit ranges with each other.

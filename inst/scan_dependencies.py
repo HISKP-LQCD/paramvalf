@@ -30,7 +30,7 @@ def resolve_path(match):
 
 
 def process_file(filename, cluster):
-    with open(filename) as f:
+    with open(filename, encoding='UTF-8') as f:
         contents = f.read()
 
     loads = list([resolve_path(match) for match in pattern_load.findall(contents)])

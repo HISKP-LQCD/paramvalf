@@ -18,3 +18,10 @@ all_names_equal <- function(l) {
     all(u)
 }
 
+stopifnot_rows_unique <- function (df) {
+    dups <- duplicated(df)
+    if (any(dups)) {
+        stop(sprintf('The following rows are duplicates: %s',
+                     paste(which(dups), collapse = ', ')))
+    }
+}

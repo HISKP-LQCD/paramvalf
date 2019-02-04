@@ -13,8 +13,7 @@ test_that('summary', {
                                   z = value$v3))
     }
 
-    pv <- pvcall(f, pv2)
-    s <- make_summary(pv)
+    s <- pv_call(f, pv2)
 
     expect(is.data.frame(s))
     expect_equal(nrow(s), 10 * 2)

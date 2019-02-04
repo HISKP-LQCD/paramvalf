@@ -13,7 +13,7 @@ test_that('one single parameter', {
         list(v0 = param$p0)
     }
 
-    pv <- pvcall(f, p0)
+    pv <- pv_call(f, p0)
 
     expect_equal(colnames(pv$param), c('p0'))
     expect_equal(names(pv$value[[1]]), c('v0'))
@@ -27,7 +27,7 @@ test_that('two single parameter', {
              v1 = param$p1)
     }
 
-    pv <- pvcall(f, p0, p1)
+    pv <- pv_call(f, p0, p1)
 
     expect_equal(colnames(pv$param), c('p0', 'p1'))
     expect_equal(names(pv$value[[1]]), c('v0', 'v1'))
@@ -39,7 +39,7 @@ test_that('one two parameters', {
              v1 = param$p3b)
     }
 
-    pv <- pvcall(f, p3)
+    pv <- pv_call(f, p3)
 
     expect_equal(colnames(pv$param), c('p3a', 'p3b'))
     expect_equal(names(pv$value[[1]]), c('v0', 'v1'))

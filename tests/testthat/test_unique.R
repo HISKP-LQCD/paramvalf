@@ -3,6 +3,7 @@ context('unique')
 test_that('unique', {
     df <- data.frame(a = 1:3, b = 4:6)
     stopifnot_rows_unique(df)
+    expect_true(TRUE)
 })
 
 test_that('non-unique', {

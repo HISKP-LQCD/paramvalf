@@ -30,6 +30,7 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
 
     rvar_name <- deparse(substitute(rvar))
 
+    lapply(list(...), function (pv) stopifnot_rows_unique(pv$param))
     joined <- inner_outer_join(...)
 
     if (length(convert) > 0) {

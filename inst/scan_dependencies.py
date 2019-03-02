@@ -15,8 +15,9 @@ import subprocess
 import jinja2
 import yaml
 
-pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
+pattern_cluster = re.compile(r'^# Cluster: (.*)$', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
+pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_save = re.compile(r'^(?:pv_save)\([\'"]([^\'"]+)[\'"], ([^(),]+)[,)]', re.M)
 
 root_dirs = ['paramval', 'vignettes']
@@ -40,6 +41,8 @@ def process_file(filename, cluster):
                for g in pattern_depend.findall(contents)
                for elem in glob.glob(g)]
 
+    clusters = pattern_cluster.findall(contents)
+
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
 
@@ -49,7 +52,8 @@ def process_file(filename, cluster):
                 loads=loads,
                 saves=saves,
                 depends=depends,
-                loads_depends=loads + depends)
+                loads_depends=loads + depends,
+                clusters=clusters)
 
     return data
 

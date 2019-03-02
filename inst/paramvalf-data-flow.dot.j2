@@ -9,16 +9,27 @@ digraph {
   nodesep = 0.5
 
   {% for file in files -%}
+  {% if file.clusters|length == 1 -%}
+  subgraph cluster_{{ file.clusters[0]|replace(' ', '_') }} {
+    label="{{ file.clusters[0] }}";
+    style=filled;
+    color=lightgrey;
+  {% endif -%}
   {{ file.basename }}
 
-  {% for var in file.loads -%}
-  {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
-  {% endfor -%}
   {% for var in file.saves -%}
   {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
   {% endfor -%}
   {% for var in file.depends -%}
   {{ var }} [shape = box, style = filled, fillcolor = "/pastel19/3"]
+  {% endfor -%}
+
+  {% if file.clusters|length == 1 -%}
+  }
+  {% endif -%}
+
+  {% for var in file.loads -%}
+  {{ var }} [shape = folder, style = filled, fillcolor = "/pastel19/2"]
   {% endfor -%}
   {% endfor -%}
 

@@ -30,7 +30,7 @@ def resolve_path(match):
     return os.path.normpath('output/{}/{}.Rdata'.format(cluster, varname))
 
 
-def process_file(filename, cluster):
+def process_file(filename, cluster, use_clusters):
     with open(filename, encoding='UTF-8') as f:
         contents = f.read()
 
@@ -41,7 +41,10 @@ def process_file(filename, cluster):
                for g in pattern_depend.findall(contents)
                for elem in glob.glob(g)]
 
-    clusters = pattern_cluster.findall(contents)
+    if use_clusters:
+        clusters = pattern_cluster.findall(contents)
+    else:
+        clusters = []
 
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
@@ -109,10 +112,10 @@ def get_templates():
     return templates
 
 
-def process_cluster(cluster, templates):
+def process_cluster(cluster, templates, use_clusters):
     # Find the user written files.
-    files_paramval = [process_file(filename, cluster) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
-    files_rmd = [process_file(filename, cluster) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
+    files_paramval = [process_file(filename, cluster, use_clusters) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
+    files_rmd = [process_file(filename, cluster, use_clusters) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
 
     dot_rendered = templates['dot'].render(files=present_file_dicts(files_paramval),
                                            rmds=present_file_dicts(files_rmd),
@@ -174,7 +177,7 @@ def main():
     templates = get_templates()
 
     for cluster in clusters:
-        process_cluster(cluster, templates)
+        process_cluster(cluster, templates, options.clusters)
 
     sh_rendered = templates['sh'].render(source_dir=source_dir, edit_warning=edit_warning)
     sh_rendered_path = 'paramvalf-run'
@@ -191,6 +194,7 @@ def _parse_args():
     :rtype: Namespace
     '''
     parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--clusters', action='store_true')
     options = parser.parse_args()
 
     return options

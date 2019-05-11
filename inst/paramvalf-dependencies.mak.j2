@@ -11,6 +11,11 @@ all: {{ all|join(' ') }}
 {{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}
 	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
 	time {{ elem.task }}
+{% else -%}
+{{ output_dir }}/{{ elem.barename }}.dummy: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}
+	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
+	time {{ elem.task }}
+	touch $@
 {% endif %}
 {% endfor -%}
 

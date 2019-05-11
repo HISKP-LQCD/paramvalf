@@ -128,7 +128,8 @@ def process_cluster(cluster, templates):
         f.write(dot_rendered)
     subprocess.call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
 
-    make = [dict(dest=f['saves'],
+    make = [dict(barename=f['barename'],
+                 dest=f['saves'],
                  src=[f['filename']] + f['loads'],
                  depends=f['depends'],
                  task='Rscript -e "options(paramvalf_verbose = TRUE); source(\'$<\')"')
@@ -144,10 +145,16 @@ def process_cluster(cluster, templates):
                 for item in make
                 for dest in item['dest']]
 
+    make_all += [
+        os.path.normpath('output/{}/{}.dummy'.format(cluster, item['barename']))
+        for item in make
+        if len(item['dest']) == 0]
+
     make_rendered = templates['make'].render(
         make=make,
         all=make_all,
         source_dir=source_dir,
+        output_dir=os.path.normpath('output/{}'.format(cluster)),
         edit_warning=edit_warning)
 
     with open(os.path.join(output_path, 'paramvalf-dependencies.mak'), 'w') as f:

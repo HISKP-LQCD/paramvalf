@@ -16,12 +16,15 @@
 #' @param dynamic_scheduling Logical, if true the each work packet will be
 #'   assigned to a newly forked process. This provides best load balancing with
 #'   a high cost of overhead. Should only be used for expensive tasks.
+#' @param filename `NULL` or character. If a filename is given, then the
+#'   individual `value` objects are stored in
+#'   `output/values/FILENAME/value-%d.Rdata`.
 #'
 #' @return PV container with the results, same number of rows as the
 #'   intermediate PV container.
 #'
 #' @export
-pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling = FALSE) {
+pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling = FALSE, filename = NULL) {
     stopifnot(inherits(func, 'function'))
 
     if (exists('paramval_rval')) {
@@ -43,7 +46,19 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
         param_row <- get_row(joined$param, i)
         value_row <- joined$value[[i]]
 
-        result <- func(param_row, value_row)
+        value_loaded <- load_lazy_value.list(value_row)
+
+        result <- func(param_row, value_loaded)
+
+        rm(value_loaded)
+
+        if (store &&
+            object.size(result) * length(indices) >= get_lazy_threshold() &&
+            !(length(names(result)) == 1 && names(result) == c('summary'))) {
+            for (name in names(result)) {
+                result[[name]] <- lazy_value(result[[name]], cluster, rvar_name, i, name)
+            }
+        }
 
         return (result)
     }
@@ -53,6 +68,8 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
     if (length(pp$value) == 0) {
         stop('There are no results. This could be because every single function call returned `NA` and was therefore discarded.')
     }
+
+    delete_rdata_directory(filename)
 
     result <-
         list(param = joined$param[pp$not_na, , drop = FALSE],
@@ -64,6 +81,10 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
 
     e <- parent.frame()
     e[[rvar_name]] <- result
+
+    if (store) {
+        pv_save(cluster, rvar, name = rvar_name)
+    }
 
     invisible(result)
 }

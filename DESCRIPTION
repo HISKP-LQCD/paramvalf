@@ -1,7 +1,7 @@
 Package: paramvalf
 Type: Package
 Title: Parameter Value Analysis Framework
-Version: 2.4.1
+Version: 2.5.0
 Author: Martin Ueding
 Authors@R: person("Ueding", "Martin", email = 'dev@martin-ueding.de', role = c('aut', 'cre'))
 Maintainer: Martin Ueding <dev@martin-ueding.de>

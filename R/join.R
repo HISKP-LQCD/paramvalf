@@ -13,8 +13,8 @@
 #' @export
 inner_outer_join_impl <- function(a, b) {
     # Extract the parameter sets from the containers.
-    ap <- tibble::as.tibble(a$param)
-    bp <- tibble::as.tibble(b$param)
+    ap <- dplyr::ungroup(tibble::as.tibble(a$param))
+    bp <- dplyr::ungroup(tibble::as.tibble(b$param))
 
     # The length of the value section (if present) must have exactly the same
     # number of elements as the parameter section.

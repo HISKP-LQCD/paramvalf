@@ -26,7 +26,7 @@ make_filename <- function (cluster, varname) {
 }
 
 #' @export
-pv_save <- function (cluster, x, name, write_unchanged = TRUE) {
+pv_save <- function (cluster, x, name, write_unchanged = TRUE, compress = FALSE) {
     if (missing(name)) {
         varname <- deparse(substitute(x))
     } else {
@@ -61,7 +61,7 @@ pv_save <- function (cluster, x, name, write_unchanged = TRUE) {
     }
 
     start_time <- Sys.time()
-    save(list = varname, file = filename)
+    save(list = varname, file = filename, compress = compress)
     end_time <- Sys.time()
 
     if (want_verbose()) {

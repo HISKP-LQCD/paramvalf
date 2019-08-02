@@ -96,6 +96,8 @@ pv_call <- function(func, ..., serial = FALSE, convert = c(), dynamic_scheduling
 #' pv2 <- parameter_to_data(pv, c('b'))
 #' print(pv2)
 parameter_to_data <- function (pv, param_cols_del) {
+    pv$param <- as.data.frame(pv$param)
+
     # Figure out which parameter columns are to be kept.
     param_cols_all <- colnames(pv$param)
     param_cols_keep <- setdiff(param_cols_all, param_cols_del)

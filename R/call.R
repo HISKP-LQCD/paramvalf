@@ -165,7 +165,6 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
     } else {
         applied <- pbmcapply::pbmclapply(indices,
                                          closure,
-                                         mc.cores = parallel::detectCores(),
                                          ignore.interactive = want_verbose(),
                                          mc.preschedule = !dynamic_scheduling)
     }

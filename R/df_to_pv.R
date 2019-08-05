@@ -4,7 +4,7 @@
 #' @param param_cols Names (not numeric indices!) of the columns in df corresponding
 #'                   to parameters
 #' @export
-df_to_paramval <- function (df, param_cols, ...) {
+df_to_paramval <- function (df, param_cols) {
     value_cols <- setdiff(colnames(df), param_cols)
 
     param <- df[param_cols]

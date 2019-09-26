@@ -127,9 +127,16 @@ def process_cluster(cluster, templates, use_clusters):
     dot_path = os.path.join(output_path, 'paramvalf-data-flow.dot')
     dot_rendered_path = os.path.join(output_path, 'paramvalf-data-flow.pdf') 
 
-    with open(dot_path, 'w') as f:
-        f.write(dot_rendered)
-    subprocess.call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
+    if os.path.isfile(dot_path):
+        with open(dot_path) as f:
+            old_dot = f.read()
+    else:
+        old_dot = ''
+
+    if dot_rendered != old_dot:
+        with open(dot_path, 'w') as f:
+            f.write(dot_rendered)
+        subprocess.call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
 
     make = [dict(barename=f['barename'],
                  dest=f['saves'],

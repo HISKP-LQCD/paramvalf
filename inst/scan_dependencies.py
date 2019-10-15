@@ -169,6 +169,7 @@ def process_cluster(cluster, templates, use_clusters, functions):
                  dest=f['saves'],
                  src=[f['filename']] + f['loads'],
                  depends=f['depends'],
+                 R_deps=f['R_deps'],
                  task='Rscript -e "options(paramvalf_verbose = TRUE); source(\'$<\')"')
             for f in files_paramval]
 

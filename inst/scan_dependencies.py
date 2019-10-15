@@ -29,6 +29,8 @@ source_dir = os.path.dirname(__file__)
 def gather_functions():
     functions = collections.defaultdict(list)
     for path in glob.glob('R/*.R'):
+        if 'RcppExports.R' in path:
+            continue
         with open(path) as f:
             for line in f:
                 m = pattern_function.search(line)

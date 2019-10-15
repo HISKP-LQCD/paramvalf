@@ -11,6 +11,7 @@ import os
 import pprint
 import re
 import subprocess
+import sys
 
 import jinja2
 import yaml
@@ -46,6 +47,18 @@ def resolve_path(match):
     return os.path.normpath('output/{}/{}.Rdata'.format(cluster, varname))
 
 
+def get_depends(filename, contents):
+    depends = []
+    matches = pattern_depend.findall(contents)
+    for match in matches:
+        paths = glob.glob(match)
+        if len(paths) == 0:
+            print('In file {} you have a manual dependency on `{}`. This glob did not match any existing files. Therefore this manual dependency is broken and you need to fix it.'.format(filename, match))
+        new_depends = [os.path.normpath(path) for path in paths]
+        depends += new_depends
+    return depends
+
+
 def process_file(filename, cluster, use_clusters, functions_list):
     with open(filename, encoding='UTF-8') as f:
         contents = f.read()
@@ -53,10 +66,8 @@ def process_file(filename, cluster, use_clusters, functions_list):
     loads = list([resolve_path(match) for match in pattern_load.findall(contents)])
     saves = list([resolve_path(match) for match in pattern_save.findall(contents)])
 
-    depends = [os.path.normpath(elem)
-               for g in pattern_depend.findall(contents)
-               for elem in glob.glob(g)]
-
+    depends = get_depends(filename, contents)
+    
     if use_clusters:
         clusters = pattern_cluster.findall(contents)
     else:

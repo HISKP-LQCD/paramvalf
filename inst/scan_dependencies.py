@@ -19,10 +19,24 @@ pattern_cluster = re.compile(r'^# Cluster: (.*)$', re.M)
 pattern_depend = re.compile(r'^# Depend: (.*)$', re.M)
 pattern_load = re.compile(r'^pv_load\([\'"]([^\'"]+)[\'"], ([^()]+)\)', re.M)
 pattern_save = re.compile(r'^(?:pv_save)\([\'"]([^\'"]+)[\'"], ([^(),]+)[,)]', re.M)
+pattern_function = re.compile(r'^([\w\d._]+) ?<-')
 
 root_dirs = ['paramval', 'vignettes']
 
 source_dir = os.path.dirname(__file__)
+
+
+def gather_functions():
+    functions = collections.defaultdict(list)
+    for path in glob.glob('R/*.R'):
+        with open(path) as f:
+            for line in f:
+                m = pattern_function.search(line)
+                if not m:
+                    continue
+                functions[path].append(m.group(1))
+
+    return functions
 
 
 def resolve_path(match):
@@ -30,7 +44,7 @@ def resolve_path(match):
     return os.path.normpath('output/{}/{}.Rdata'.format(cluster, varname))
 
 
-def process_file(filename, cluster, use_clusters):
+def process_file(filename, cluster, use_clusters, functions_list):
     with open(filename, encoding='UTF-8') as f:
         contents = f.read()
 
@@ -49,9 +63,17 @@ def process_file(filename, cluster, use_clusters):
     basename = os.path.basename(filename)
     barename = os.path.splitext(basename)[0]
 
+    R_deps = []
+    for function_file, functions in functions_list.items():
+        for function in functions:
+            if function in contents:
+                R_deps.append(function_file)
+                break
+
     data = dict(filename=os.path.normpath(filename),
                 basename=basename.replace('-', '_'),
                 barename=barename.replace('-', '_'),
+                R_deps=R_deps,
                 loads=loads,
                 saves=saves,
                 depends=depends,
@@ -81,6 +103,7 @@ def present_file_dict(file_dict):
     fdc['saves'] = list(map(present_name, fdc['saves']))
     fdc['depends'] = list(map(present_name, fdc['depends']))
     fdc['loads_depends'] = list(map(present_name, fdc['loads_depends']))
+    fdc['R_deps'] = list(map(present_name, fdc['R_deps']))
     return fdc
 
 
@@ -112,10 +135,10 @@ def get_templates():
     return templates
 
 
-def process_cluster(cluster, templates, use_clusters):
+def process_cluster(cluster, templates, use_clusters, functions):
     # Find the user written files.
-    files_paramval = [process_file(filename, cluster, use_clusters) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
-    files_rmd = [process_file(filename, cluster, use_clusters) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
+    files_paramval = [process_file(filename, cluster, use_clusters, functions) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
+    files_rmd = [process_file(filename, cluster, use_clusters, functions) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
 
     dot_rendered = templates['dot'].render(files=present_file_dicts(files_paramval),
                                            rmds=present_file_dicts(files_rmd),
@@ -136,7 +159,9 @@ def process_cluster(cluster, templates, use_clusters):
     if dot_rendered != old_dot:
         with open(dot_path, 'w') as f:
             f.write(dot_rendered)
-        subprocess.call(['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path])
+        command = ['dot', '-T', 'pdf', dot_path, '-o', dot_rendered_path]
+        print(' '.join(command))
+        subprocess.call(command)
 
     make = [dict(barename=f['barename'],
                  dest=f['saves'],
@@ -180,11 +205,13 @@ def process_cluster(cluster, templates, use_clusters):
 def main():
     options = _parse_args()
 
+    functions = gather_functions()
+
     clusters = get_clusters()
     templates = get_templates()
 
     for cluster in clusters:
-        process_cluster(cluster, templates, options.clusters)
+        process_cluster(cluster, templates, options.clusters, functions)
 
     sh_rendered = templates['sh'].render(source_dir=source_dir, edit_warning=edit_warning)
     sh_rendered_path = 'paramvalf-run'

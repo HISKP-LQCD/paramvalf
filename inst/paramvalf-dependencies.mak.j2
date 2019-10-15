@@ -8,11 +8,11 @@ all: {{ all|join(' ') }}
 
 {% for elem in make -%}
 {% if elem.dest|length > 0 -%}
-{{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}
+{{ elem.dest|join(' ') }}: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }} {{ elem.R_deps|join(' ') }}
 	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
 	time {{ elem.task }}
 {% else -%}
-{{ output_dir }}/{{ elem.barename }}.dummy: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }}
+{{ output_dir }}/{{ elem.barename }}.dummy: {{ elem.src|join(' ') }} {{ elem.depends|join(' ') }} {{ elem.R_deps|join(' ') }}
 	@echo "$$( tput bold )$$( tput setaf 6 )Running $< ...$$( tput sgr0 )"
 	time {{ elem.task }}
 	touch $@

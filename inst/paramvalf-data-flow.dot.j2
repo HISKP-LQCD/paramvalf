@@ -23,6 +23,9 @@ digraph {
   {% for var in file.depends -%}
   {{ var }} [shape = box, style = filled, fillcolor = "/pastel19/3"]
   {% endfor -%}
+  {% for var in file.R_deps -%}
+  {{ var }} [shape = box, style = filled, fillcolor = "/pastel19/4"]
+  {% endfor -%}
 
   {% if file.clusters|length == 1 -%}
   }
@@ -35,11 +38,13 @@ digraph {
 
   {% for file in files -%}
   { {{ file.loads_depends|join(', ') }} } -> {{ file.basename }} -> { {{ file.saves|join(', ') }} }
+  { {{ file.R_deps|join(', ') }} } -> {{ file.basename }}
   {% endfor -%}
 
   {%- for file in rmds %}
   {{ file.basename }} [shape = note, style = filled, fillcolor = "/pastel19/6"]
   { {{ file.loads|join(', ') }} } -> {{ file.basename }}
+  { {{ file.R_deps|join(', ') }} } -> {{ file.basename }}
   {%- endfor %}
 }
 

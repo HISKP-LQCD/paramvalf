@@ -7,3 +7,10 @@ tsv_to_paramval <- function (filename, param_cols, ...) {
     df_to_paramval(data, param_cols, ...)
 }
 
+
+#' Convert TSV to parameters
+#'
+#' @export
+tsv_to_param <- function (path) {
+    paramval(param = read.table(path, header = TRUE, stringsAsFactors = FALSE))
+}

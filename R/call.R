@@ -231,3 +231,17 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
     list(value = applied[!is_na],
          not_na = !is_na)
 }
+
+#' @export
+pv_unnest <- function (pv) {
+    param <- pv$param
+    param$new_param <- lapply(pv$value, function (v) v$paramval$param)
+    res <- list(param = tidyr::unnest(param))
+    
+    if ('value' %in% names(pv$value[[1]]$paramval)) {
+        values <- lapply(pv$value, function (v) v$paramval$value)
+        res$value <- do.call(c, values)
+    }
+    
+    return (res)
+}

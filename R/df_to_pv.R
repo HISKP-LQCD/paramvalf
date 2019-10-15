@@ -12,4 +12,3 @@ df_to_paramval <- function (df, param_cols) {
 
     list(param = param, value = value)
 }
-

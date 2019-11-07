@@ -167,6 +167,7 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
     } else {
         applied <- pbmcapply::pbmclapply(indices,
                                          closure,
+                                         mc.cores = num_cores(),
                                          ignore.interactive = want_verbose(),
                                          mc.preschedule = !dynamic_scheduling)
     }
@@ -181,7 +182,7 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
         applied[is_failed] <- pbmcapply::pbmclapply(
             indices[is_failed],
             closure,
-            mc.cores = parallel::detectCores(),
+            mc.cores = num_cores(),
             ignore.interactive = want_verbose(),
             mc.preschedule = FALSE)
     }
@@ -244,4 +245,21 @@ pv_unnest <- function (pv) {
     }
     
     return (res)
+}
+
+#' Detects the number of cores to use
+#'
+#' This framework often runs on workstations and people have not properly
+#' configured the `mc.cores` option. Therefore it is easier to just use all of
+#' the cores for them. But then on the `qbig` frontend we do not want to use
+#' all of them but just 8 cores. And on the nodes provisioned by SLURM we want
+#' to honor the `SLURM_CPUS_PER_TASK` environment variable.
+#'
+#' @export
+num_cores <- function () {
+    if (isTRUE(Sys.info()['nodename'] == 'qbig')) {
+        8
+    } else {
+        as.integer(Sys.getenv('SLURM_CPUS_PER_TASK', unset = parallel::detectCores()))
+    }
 }

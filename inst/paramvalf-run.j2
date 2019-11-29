@@ -4,12 +4,16 @@
 set -e
 set -u
 
-echo "$( tput bold )$( tput setaf 6 )Scanning dependencies ...$( tput sgr0 )"
-python3 {{ source_dir }}/scan_dependencies.py
+run_fn() {
+  echo "$( tput bold )$( tput setaf 6 )Scanning dependencies ...$( tput sgr0 )"
+  python3 {{ source_dir }}/scan_dependencies.py
+  
+  dir="${1-.}"
+  shift
+  
+  make -f "output/$dir/paramvalf-dependencies.mak" "$@"
+}
 
-dir="${1-.}"
-shift
-
-make -f "output/$dir/paramvalf-dependencies.mak" "$@"
+run_fn | tee paramvalf_run_$(date +"%Y_%m_%d-%H_%M").log
 
 {# vim: set ft=sh :#}

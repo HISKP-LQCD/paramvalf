@@ -257,7 +257,9 @@ pv_unnest <- function (pv) {
 #'
 #' @export
 num_cores <- function () {
-    if (isTRUE(Sys.info()['nodename'] == 'qbig')) {
+    if( !is.null( options()$mc.cores ) ){
+      options()$mc.cores
+    } else if (isTRUE(Sys.info()['nodename'] == 'qbig')) {
         8
     } else {
         as.integer(Sys.getenv('SLURM_CPUS_PER_TASK', unset = parallel::detectCores()))

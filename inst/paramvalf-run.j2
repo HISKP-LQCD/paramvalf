@@ -14,6 +14,6 @@ run_fn() {
   make -f "output/$dir/paramvalf-dependencies.mak" "$@"
 }
 
-run_fn | tee paramvalf_run_$(date +"%Y_%m_%d-%H_%M").log
+run_fn | tee paramvalf_run_$(date +"%Y-%m-%d_%H-%M").log
 
 {# vim: set ft=sh :#}

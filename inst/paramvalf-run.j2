@@ -4,7 +4,8 @@
 set -e
 set -u
 
-logfile="paramvalf_run_$(date +"%Y-%m-%d_%H-%M").log"
+mkdir -p output
+logfile="output/paramvalf_run_$(date +"%Y-%m-%d_%H-%M").log"
 exec > >(tee "$logfile")
 exec 2>&1
 

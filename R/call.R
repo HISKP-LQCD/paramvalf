@@ -195,10 +195,11 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
         cat('These correspond to the following parameters:\n')
         print(joined$param[is_failed, , drop = FALSE])
 
-        cat('The joined paramval object, the return value and the failure vector have been written to the variable `paramval_rval` in the global scope.\n')
+        cat('The joined paramval object, the return value and the failure vector have been written to the variable `paramval_rval` in the global scope. Additionally this will be written into `output/paramval_rval.Rdata`.\n')
         paramval_rval <<- list(is_failed = is_failed,
                                joined = joined,
                                applied = applied)
+        save(paramval_rval, file = 'output/paramval_rval.Rdata')
         stop()
     }
 

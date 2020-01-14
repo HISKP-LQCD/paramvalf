@@ -19,7 +19,7 @@ param_overview <- function (pv) {
 print.param_overview <- function (x) {
   stopifnot("param_overview" %in% class(x))
   for (p_name in names(x)) {
-    cat(p_name, ": ", x[[p_name]], "\n")
+    cat(p_name, ": ", paste(x[[p_name]], collapse = ' '), "\n", sep = '')
   }
 }
 

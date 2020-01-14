@@ -6,11 +6,7 @@
 #' @export
 param_overview <- function(pv){
   stopifnot( !is.null(pv$param) )
-  unique_params <- lapply(X = 1:ncol(pv$param),
-                          FUN = function(pcol){
-                            unique(pv$param[,pcol] %>% dplyr::pull()) 
-                          })
-  names(unique_params) <- names(pv$param)
+  unique_params <- lapply(pv$param, unique)
   class(unique_params) <- append(class(unique_params), "param_overview")
   return(unique_params)
 }

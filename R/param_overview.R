@@ -1,8 +1,8 @@
 #' get an overview over all available param values in a paramval object
 #'
 #' @param pv paramval object
-#' @return named list with names corresponding to \code{names(pv$param)}
-#' containing the unique values for each column of \code{pv$param}
+#' @return named list with names corresponding to `names(pv$param)`
+#' containing the unique values for each column of `pv$param`
 #'
 #' @export
 param_overview <- function (pv) {

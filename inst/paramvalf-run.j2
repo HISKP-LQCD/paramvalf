@@ -9,11 +9,11 @@ logfile="output/paramvalf_run_$(date +"%Y-%m-%d_%H-%M").log"
 exec > >(tee "$logfile")
 exec 2>&1
 
-echo "$( tput bold )$( tput setaf 6 )Scanning dependencies ...$( tput sgr0 )"
-python3 {{ source_dir }}/scan_dependencies.py
-
 dir="${1-.}"
 shift
+
+echo "$( tput bold )$( tput setaf 6 )Scanning dependencies ...$( tput sgr0 )"
+python3 {{ source_dir }}/scan_dependencies.py "$dir"
 
 make -f "output/$dir/paramvalf-dependencies.mak" "$@"
 

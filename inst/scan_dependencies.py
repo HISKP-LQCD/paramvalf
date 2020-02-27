@@ -7,6 +7,7 @@ import argparse
 import collections
 import copy
 import glob
+import json
 import os
 import pprint
 import re
@@ -28,16 +29,33 @@ source_dir = os.path.dirname(__file__)
 
 
 def gather_functions():
-    functions = collections.defaultdict(list)
-    for path in glob.glob('R/*.R'):
-        if 'RcppExports.R' in path:
-            continue
-        with open(path) as f:
-            for line in f:
-                m = pattern_function.search(line)
-                if not m:
-                    continue
-                functions[path].append(m.group(1))
+    print('Gathering R functions in `R/`.')
+
+    json_path = 'output/functions.js'
+    r_files = glob.glob('R/*.R')
+
+    if not os.path.isfile(json_path) or \
+       any(os.path.getmtime(path) > os.path.getmtime(json_path) for path in r_files):
+        print('Something has changed, re-parsing.')
+
+        functions = collections.defaultdict(list)
+
+        for path in r_files:
+            if 'RcppExports.R' in path:
+                continue
+            with open(path) as f:
+                for line in f:
+                    m = pattern_function.search(line)
+                    if not m:
+                        continue
+                    functions[path].append(m.group(1))
+
+        with open(json_path, 'w') as f:
+            json.dump(functions, f, sort_keys=True, indent=2)
+    else:
+        print('Nothing has changed, using chache.')
+        with open(json_path) as f:
+            functions = json.load(f)
 
     return functions
 
@@ -56,6 +74,7 @@ def get_depends(filename, contents):
             print('In file {} you have a manual dependency on `{}`. This glob did not match any existing files. Therefore this manual dependency is broken and you need to fix it.'.format(filename, match))
         new_depends = [os.path.normpath(path) for path in paths]
         depends += new_depends
+    depends.sort()
     return depends
 
 
@@ -63,8 +82,8 @@ def process_file(filename, cluster, use_clusters, functions_list):
     with open(filename, encoding='UTF-8') as f:
         contents = f.read()
 
-    loads = list([resolve_path(match) for match in pattern_load.findall(contents)])
-    saves = list([resolve_path(match) for match in pattern_save.findall(contents)])
+    loads = sorted([resolve_path(match) for match in pattern_load.findall(contents)])
+    saves = sorted([resolve_path(match) for match in pattern_save.findall(contents)])
 
     depends = get_depends(filename, contents)
     
@@ -82,6 +101,8 @@ def process_file(filename, cluster, use_clusters, functions_list):
             if function in contents:
                 R_deps.append(function_file)
                 break
+
+    R_deps.sort()
 
     data = dict(filename=os.path.normpath(filename),
                 basename=basename.replace('-', '_'),
@@ -112,11 +133,11 @@ def present_file_dict(file_dict):
     fdc = copy.deepcopy(file_dict)
     fdc['filename'] = present_name(fdc['filename'])
     fdc['basename'] = present_name(fdc['basename'])
-    fdc['loads'] = list(map(present_name, fdc['loads']))
-    fdc['saves'] = list(map(present_name, fdc['saves']))
-    fdc['depends'] = list(map(present_name, fdc['depends']))
-    fdc['loads_depends'] = list(map(present_name, fdc['loads_depends']))
-    fdc['R_deps'] = list(map(present_name, fdc['R_deps']))
+    fdc['loads'] = sorted(map(present_name, fdc['loads']))
+    fdc['saves'] = sorted(map(present_name, fdc['saves']))
+    fdc['depends'] = sorted(map(present_name, fdc['depends']))
+    fdc['loads_depends'] = sorted(map(present_name, fdc['loads_depends']))
+    fdc['R_deps'] = sorted(map(present_name, fdc['R_deps']))
     return fdc
 
 
@@ -149,6 +170,8 @@ def get_templates():
 
 
 def process_cluster(cluster, templates, use_clusters, functions):
+    print('Processing directory {}.'.format(cluster))
+
     # Find the user written files.
     files_paramval = [process_file(filename, cluster, use_clusters, functions) for filename in glob.glob('paramval/{}/*.R'.format(cluster))]
     files_rmd = [process_file(filename, cluster, use_clusters, functions) for filename in glob.glob('vignettes/{}/*.Rmd'.format(cluster))]
@@ -224,8 +247,7 @@ def main():
     clusters = get_clusters()
     templates = get_templates()
 
-    for cluster in clusters:
-        process_cluster(cluster, templates, options.clusters, functions)
+    process_cluster(options.dir, templates, options.clusters, functions)
 
     sh_rendered = templates['sh'].render(source_dir=source_dir, edit_warning=edit_warning)
     sh_rendered_path = 'paramvalf-run'
@@ -242,6 +264,7 @@ def _parse_args():
     :rtype: Namespace
     '''
     parser = argparse.ArgumentParser(description='')
+    parser.add_argument('dir')
     parser.add_argument('--clusters', action='store_true')
     options = parser.parse_args()
 

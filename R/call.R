@@ -110,7 +110,8 @@ parameter_to_data <- function (pv, param_cols_del) {
     # corresponding row indices.
     grouped <- pv$param %>%
         group_by_at(param_cols_keep) %>%
-        summarize(.indices = list(.idx))
+        summarize(.indices = list(.idx)) %>%
+        ungroup()
 
     # We do not want to carry the indices in the `grouped` thing to the return
     # value, therefore we extract it here and delete it from the tibble.

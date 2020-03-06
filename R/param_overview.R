@@ -31,4 +31,3 @@ summary.param_overview <- function (x) {
   stopifnot("param_overview" %in% class(x))
   print(x)
 }
-

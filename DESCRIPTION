@@ -4,7 +4,7 @@ Title: Parameter Value Analysis Framework
 Version: 2.7.0
 Author: Martin Ueding
 Authors@R: person("Ueding", "Martin", role = c('aut', 'cre'))
-Maintainer: Martin Ueding <no-reply@martin-ueding.de>
+Maintainer: Martin Ueding <mu@martin-ueding.de>
 Description: A framework for running analysis steps with different options.
     Values know their parameters and analysis step will automatically be performed
     for all combinatoric values of the relevant parameters.

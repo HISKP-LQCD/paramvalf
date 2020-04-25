@@ -22,7 +22,10 @@ inner_outer_join_impl <- function(a, b) {
     stopifnot(is.null(b$value) || nrow(b$param) == length(b$value))
 
     # Label the rows of the parameters such that we know which value rows to
-    # use later.
+    # use later. In case either of them is empty, we would have a problem with
+    # the labels, though.
+    stopifnot(nrow(ap) >= 1)
+    stopifnot(nrow(bp) >= 1)
     ap$.id_a <- 1:nrow(ap)
     bp$.id_b <- 1:nrow(bp)
 
@@ -44,6 +47,7 @@ inner_outer_join_impl <- function(a, b) {
     # For the values we just take the relevant lists from the individual values
     # and concatenate them into a single large list.
     value <- list()
+    stopifnot(nrow(param) >= 1)
     for (i in 1:nrow(param)) {
         id_a <- param$.id_a[i]
         id_b <- param$.id_b[i]

@@ -71,6 +71,10 @@ make_name <- function(param) {
 #'
 #' @export
 make_summary <- function(pv) {
+    if (is.data.frame(pv)) {
+        stop('You must pass a paramval object to make_summary. Perhaps pv_call already created a summary for you?')
+    }
+
     res <- list()
 
     # The `$param` can also be a tibble, if it has been worked on with `dplyr`
@@ -89,8 +93,19 @@ make_summary <- function(pv) {
             stop('The summary data frame must not contain any column that has the same name as the param data frame. Columns in question are: ', names_intersection, '. This usually arises because one copies param columns to the summary, but that is done automatically for you!')
         }
 
+        # Some summaries might have zero elements. That is okay, we will just
+        # skip those.
+        if (nrow(s) == 0) {
+            next
+        }
+
         res[[i]] <- cbind(pv$param[i, , drop = FALSE], s, row.names = NULL)
         rownames(res[[i]]) <- NULL
+    }
+
+    # Perhaps every single element had zero rows. In this we just return an empty data frame.
+    if (all(sapply(res, is.null))) {
+        return (data.frame())
     }
 
     bound <- do.call(rbind, res)

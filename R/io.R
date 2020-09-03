@@ -20,11 +20,28 @@ get_root_dir <- function() {
     return (d)
 }
 
+#' Generate a path to Rdata
+#'
+#' Generates the path to an Rdata file based on the current cluster and the
+#' variable name.
+#'
+#' @param cluster Character. Name of the project.
+#' @param varname, Character. Name of the variable.
+#'
 #' @export
 make_filename <- function (cluster, varname) {
     sprintf('%s/output/%s/%s.Rdata', get_root_dir(), cluster, varname)
 }
 
+#' Saves a variable to a path based on its name.
+#'
+#' Stores the given variable in an Rdata file.
+#'
+#' @param cluster Character. Name of the project.
+#' @param x Variable
+#' @param name Character. If given, it will determine the filename, otherwise the expression `x` is deparsed.
+#' @param write_unchanged Logical. Shall the contents be written even if nothing has changed?
+#' @param compress Logical. Shall the contents be compressed? The compression does not make much sense when writing random numerical data, therefore it is turned off by default.
 #' @export
 pv_save <- function (cluster, x, name, write_unchanged = TRUE, compress = FALSE) {
     if (missing(name)) {
@@ -69,6 +86,15 @@ pv_save <- function (cluster, x, name, write_unchanged = TRUE, compress = FALSE)
     }
 }
 
+#' Loads a variable
+#'
+#' The variables are assigned a path based on their variable name. This function loads it and puts them into the global environment.
+#'
+#' @param cluster Character. Name of the project.
+#' @param x Expression. Name of the variable, without quites.
+#' @param name Character. Name of the variable as character, can be used instead of the `x` parameter.
+#' @param envir Environment. Can be used to load to somewhere else.
+#'
 #' @export
 pv_load <- function (cluster, x, name, envir = NULL) {
     if (missing(name)) {

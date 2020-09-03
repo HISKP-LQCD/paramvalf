@@ -12,6 +12,9 @@ all_names_equal <- function(l) {
     }
 
     names <- lapply(l, names)
+    if (all(sapply(names, is.null))) {
+        return (TRUE)
+    }
     all_names <- do.call(c, names)
     name_matrix <- matrix(all_names, nrow = length(names[[1]]))
     u <- apply(name_matrix, 1, function (row) { all(row == row[1]) })

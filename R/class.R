@@ -1,5 +1,8 @@
 #' paramval constructor
 #'
+#' @param param data.frame with parameters
+#' @param value list with named lists.
+#'
 #' @export
 paramval <- function (param, value) {
     pv <- list(param = param)

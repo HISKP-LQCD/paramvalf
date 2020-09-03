@@ -18,14 +18,14 @@ pv2 <- list(param = data.frame(p5 = c(-1, -2)),
 test_that('single', {
     j <- inner_outer_join(p0)
 
-    expect(is.pvcontainer(j))
+    expect(is.pvcontainer(j), 'must be a PV')
     expect_equal(j, p0)
 })
 
 test_that('two', {
     j <- inner_outer_join(p0, p3)
 
-    expect(is.pvcontainer(j))
+    expect(is.pvcontainer(j), 'must be a PV')
     expect_equal(nrow(j$param), 2)
     expect_equal(colnames(j$param), c('p0', 'p3a', 'p3b'))
 })
@@ -33,7 +33,7 @@ test_that('two', {
 test_that('with value', {
     j <- inner_outer_join(pv1, pv2)
 
-    expect(is.pvcontainer(j))
+    expect(is.pvcontainer(j), 'must be a PV')
     expect_equal(nrow(j$param), 2)
     expect_equal(colnames(j$param), c('p4', 'p5'))
     expect_equal(names(j$value[[1]]), c('v1', 'v2', 'v3', 'v4'))

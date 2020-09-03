@@ -2,7 +2,11 @@
 title: "Fit Example"
 author: "Martin Ueding"
 date: "15 Januar 2019"
-output: pdf_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fit Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -49,7 +53,7 @@ We prepare the data by looping over all our parameters, which there are only two
     
     list(corr_boot = corr_boot)
 }
-corr_boot_pv <- pv_call(.func, model_pv)
+corr_boot_pv <- pv_call(.func, model_pv, serial = TRUE)
 ```
 
 `pv_call` applies the given function to each row of the parameter data frame. There are no values attached, so in the above function the parameter `value` will be just `NULL`. We can access the `model` parameter via `param`, which is a one-row data frame. To see exactly what `param` and `value` correspond to, we just let it print this.
@@ -95,7 +99,7 @@ We can now perform the fit with both models and both ranges:
     
     list(fit = fit)
 }
-fit_pv <- pv_call(.func, corr_boot_pv, ranges_pv)
+fit_pv <- pv_call(.func, corr_boot_pv, ranges_pv, serial = TRUE)
 ```
 
 This function will be called four times because the `corr_boot_pv` and the `ranges_pv` have no common parameters and therefore we get the outer product of the parameters. We see these four combinations in the `param` section of `fit_pv`. We also see that we have four fit objects at `fit`. This way we have some values and all the parameters that are associated with them.
@@ -135,7 +139,7 @@ The four plots are nice, but we would like to compare the results now. For this 
     
     list(summary = s)
 }
-fit_summary <- pv_call(.func, fit_pv)
+fit_summary <- pv_call(.func, fit_pv, serial = TRUE)
 ```
 
 The return value of this function is a list with just one element named `summary`. This tells `pv_call` that we want to make a summary data frame. It will cbind (“join” in SQL terms) the matching parameters to the returned data frame. All the data frames from each function call (4 in our case) will be joined with rbind. We then obtain the following:

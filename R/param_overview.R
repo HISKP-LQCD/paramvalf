@@ -15,8 +15,10 @@ param_overview <- function (pv) {
 #' print `param_overview` object
 #'
 #' @param x object of class `param_overview`
+#' @param ... Ignored.
+#'
 #' @export
-print.param_overview <- function (x) {
+print.param_overview <- function (x, ...) {
   stopifnot("param_overview" %in% class(x))
   for (p_name in names(x)) {
     cat(p_name, ": ", paste(x[[p_name]], collapse = ' '), "\n", sep = '')
@@ -25,9 +27,11 @@ print.param_overview <- function (x) {
 
 #' summarize `param_overview` object
 #'
-#' @param x object of class `param_overview`
+#' @param object Object of class `param_overview`
+#' @param ... Ignored.
+#'
 #' @export
-summary.param_overview <- function (x) {
-  stopifnot("param_overview" %in% class(x))
-  print(x)
+summary.param_overview <- function (object, ...) {
+  stopifnot("param_overview" %in% class(object))
+  print(object, ...)
 }

@@ -235,6 +235,14 @@ post_process <- function (indices, closure, serial, dynamic_scheduling, joined) 
          not_na = !is_na)
 }
 
+#' Un-nests a nested PV within a PV
+#'
+#' One can have a nested PV construct where each value is just a list
+#' containing the element `paramval`. This function will then add the inner
+#' parameters to the outer ones and put the values to the outer level.
+#'
+#' @param pv PV object
+#'
 #' @export
 pv_unnest <- function (pv) {
     param <- pv$param

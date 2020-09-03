@@ -2,22 +2,27 @@ Package: paramvalf
 Type: Package
 Title: Parameter Value Analysis Framework
 Version: 2.7.0
-Author: Martin Ueding
-Authors@R: person("Ueding", "Martin", role = c('aut', 'cre'))
+Author: Martin Ueding [aut, cre]
+Authors@R: person('Martin', 'Ueding', email = 'mu@martin-ueding.de', role = c('aut', 'cre'))
 Maintainer: Martin Ueding <mu@martin-ueding.de>
 Description: A framework for running analysis steps with different options.
     Values know their parameters and analysis step will automatically be performed
     for all combinatoric values of the relevant parameters.
-License: MIT/Expat
+License: Expat
 Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
     parallel,
-    pbmcapply
-RoxygenNote: 7.1.0
+    pbmcapply,
+    tidyr,
+    tibble
+RoxygenNote: 7.1.1
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2,
+    hadron,
+    highr
 VignetteBuilder: knitr

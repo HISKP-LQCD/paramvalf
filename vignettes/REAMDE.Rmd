@@ -4,7 +4,7 @@ author: "Martin Ueding"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Parameter Value Analysis Framework}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -68,7 +68,7 @@ The functions in this framework always have the same structure:
 In order to call this functions, we use the framework function.
 
 ```{r}
-correlation <- pv_call(do_correlation, cylinders)
+correlation <- pv_call(do_correlation, cylinders, serial = TRUE)
 ```
 
 This object now contains the correlation for each set of the parameters.
@@ -98,7 +98,7 @@ do_correlation <- function(param, value) {
          corr_disp_wt = cor(data$disp, data$wt, method = param$correlation_method))
 }
 
-correlation <- pv_call(do_correlation, cylinders, correlation_method)
+correlation <- pv_call(do_correlation, cylinders, correlation_method, serial = TRUE)
 ```
 
 Now we have a more interesting result.
@@ -116,7 +116,7 @@ cylinders <- list(param = data.frame(cyl = c(4, 6, 8)))
 We can just re-run the functions because they were built with this extension in mind already.
 
 ```{r}
-correlation <- pv_call(do_correlation, cylinders, correlation_method)
+correlation <- pv_call(do_correlation, cylinders, correlation_method, serial = TRUE)
 print(correlation)
 ```
 
@@ -137,7 +137,7 @@ do_corr_summary <- function(param, value) {
     list(summary = summary)
 }
 
-corr_summary <- pv_call(do_corr_summary, correlation)
+corr_summary <- pv_call(do_corr_summary, correlation, serial = TRUE)
 ```
 
 The resulting data frame has two rows per parameter set. This is flexible, so you can have arbitrary many rows for each parameter set.

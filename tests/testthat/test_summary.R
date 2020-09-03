@@ -15,7 +15,7 @@ test_that('summary', {
 
     s <- pv_call(f, pv2)
 
-    expect(is.data.frame(s))
+    expect(is.data.frame(s), 'must be a data.frame')
     expect_equal(nrow(s), 10 * 2)
     expect_equal(colnames(s), c('p5', 'x', 'y', 'z'))
 })
@@ -33,7 +33,7 @@ test_that('summary with empty', {
 
     s <- pv_call(f, pv2)
 
-    expect(is.data.frame(s))
+    expect(is.data.frame(s), 'must be a data.frame')
     expect_equal(nrow(s), 10)
     expect_equal(colnames(s), c('p5', 'x', 'y', 'z'))
 })
@@ -45,6 +45,6 @@ test_that('summary only empty', {
 
     s <- pv_call(f, pv2)
 
-    expect(is.data.frame(s))
+    expect(is.data.frame(s), 'must be a data.frame')
     expect_equal(nrow(s), 0)
 })

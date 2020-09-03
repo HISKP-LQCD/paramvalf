@@ -20,7 +20,11 @@ test_that('list', {
     f2 <- function(param, value) {
         expect(!is.null(value$v1), 'value$v1 must not be NULL')
         expect_equal(value$v1, list(3, 'X'))
+
+        list()
     }
 
     v2 <- pv_call(f2, v)
+
+    expect(is.pvcontainer(v2), 'v2 must be a PV')
 })

@@ -7,3 +7,5 @@ inst/doc
 man/*.Rd
 output/
 NAMESPACE
+paramvalf.Rcheck/
+paramvalf_2.7.0.tar.gz

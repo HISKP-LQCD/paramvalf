@@ -2,10 +2,10 @@
 .Rhistory
 .Rproj.user
 .Ruserdata
+NAMESPACE
 docs/
 inst/doc
 man/*.Rd
 output/
-NAMESPACE
 paramvalf.Rcheck/
-paramvalf_2.7.0.tar.gz
+paramvalf_*.tar.gz

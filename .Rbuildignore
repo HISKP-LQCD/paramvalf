@@ -1,8 +1,8 @@
+.*\.swo
+\.paramvalf-root
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^docs$
-\.paramvalf-root
 output
-tags
 paramvalf_.*\.tar\.gz
-.*\.swo
+tags
